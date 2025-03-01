@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.ontologycentral</groupId>
@@ -15,18 +16,36 @@
 		<url>https://code.google.com/p/ldspider/issues/list</url>
 	</issueManagement>
 
+	<!-- Upgrade to Java 8 -->
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<maven.compiler.target>1.6</maven.compiler.target>
-		<maven.compiler.source>1.6</maven.compiler.source>
+		<maven.compiler.source>1.8</maven.compiler.source>
+		<maven.compiler.target>1.8</maven.compiler.target>
 	</properties>
 
-	<dependencies>
+	<!-- Explicitly declare Maven Central repository using HTTPS -->
+	<repositories>
+		<repository>
+			<id>central</id>
+			<name>Maven Central Repository</name>
+			<url>https://repo.maven.apache.org/maven2/</url>
+			<layout>default</layout>
+		</repository>
+	</repositories>
 
+	<dependencies>
+		<!-- Updated HttpClient dependency -->
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpclient</artifactId>
-			<version>4.3.5</version>
+			<version>4.5.13</version>
+		</dependency>
+
+		<!-- Updated HttpCore dependency to match HttpClient -->
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpcore</artifactId>
+			<version>4.4.13</version>
 		</dependency>
 
 		<dependency>
@@ -54,27 +73,43 @@
 			<version>1.1.1</version>
 		</dependency>
 
+		<!-- Include Apache Commons CSV stable release explicitly -->
 		<dependency>
-			<groupId>org.apache.httpcomponents</groupId>
-			<artifactId>httpcore</artifactId>
-			<version>4.3.2</version>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-csv</artifactId>
+			<version>1.10.0</version>
 		</dependency>
 
+		<!-- Exclude the transitive snapshot dependency from apache-any23-core -->
 		<dependency>
 			<groupId>org.apache.any23</groupId>
 			<artifactId>apache-any23-core</artifactId>
 			<version>1.0</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.apache.commons</groupId>
+					<artifactId>commons-csv</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<!-- SLF4J API dependency -->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>1.7.36</version>
+		</dependency>
+
+		<!-- SLF4J Simple Binding for logging -->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-simple</artifactId>
+			<version>1.7.36</version>
 		</dependency>
 	</dependencies>
 
-	<scm>
-		<connection>svn:https://ldspider.googlecode.com/svn/trunk</connection>
-		<developerConnection>svn:https://ldspider.googlecode.com/svn/trunk</developerConnection>
-		<url>https://code.google.com/p/ldspider/source/browse/</url>
-	</scm>
-
 	<build>
-		<!-- Support for deploying sites to scp://-Urls -->
+		<!-- Extensions for deploying sites via scp and SVN -->
 		<extensions>
 			<extension>
 				<groupId>org.apache.maven.wagon</groupId>
@@ -89,10 +124,22 @@
 		</extensions>
 
 		<plugins>
+			<!-- Maven Compiler Plugin for Java 8 -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.8.1</version>
+				<configuration>
+					<source>1.8</source>
+					<target>1.8</target>
+				</configuration>
+			</plugin>
+
+			<!-- Maven Jar Plugin for creating the jar with main class -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
-				<version>2.4</version>
+				<version>2.3</version>
 				<configuration>
 					<archive>
 						<manifest>
@@ -104,6 +151,7 @@
 				</configuration>
 			</plugin>
 
+			<!-- Maven Assembly Plugin for building a jar-with-dependencies -->
 			<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>
 				<version>2.3</version>
@@ -119,6 +167,7 @@
 				</configuration>
 			</plugin>
 
+			<!-- Maven Shade Plugin for creating an uber-jar -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
@@ -137,12 +186,10 @@
 								</excludes>
 							</artifactSet>
 							<transformers>
-								<transformer
-									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+								<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
 									<mainClass>com.ontologycentral.ldspider.Main</mainClass>
 								</transformer>
-								<transformer
-									implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+								<transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
 							</transformers>
 							<shadedArtifactAttached>true</shadedArtifactAttached>
 							<shadedClassifierName>with-dependencies</shadedClassifierName>
@@ -161,20 +208,22 @@
 				</executions>
 			</plugin>
 
+			<!-- Maven Source Plugin for attaching sources -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-source-plugin</artifactId>
 				<version>3.0.1</version>
 				<executions>
-  					<execution>
-    						<id>attach-sources</id>
-    						<goals>
-      							<goal>jar</goal>
-    						</goals>
-  					</execution>
+					<execution>
+						<id>attach-sources</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
 				</executions>
 			</plugin>
 
+			<!-- Maven Javadoc Plugin for attaching javadocs -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
@@ -183,18 +232,19 @@
 					<additionalparam>-Xdoclint:none</additionalparam>
 				</configuration>
 				<executions>
-  					<execution>
-    						<id>attach-javadocs</id>
-    						<goals>
-      							<goal>jar</goal>
-    						</goals>
-  					</execution>
+					<execution>
+						<id>attach-javadocs</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
 				</executions>
 			</plugin>
 		</plugins>
 	</build>
+
 	<profiles>
-		<!-- Prevent GPG signing of generated artifacts unless explicitly requested -->		
+		<!-- Profile to sign artifacts if required -->
 		<profile>
 			<id>release-sign-artifacts</id>
 			<activation>
