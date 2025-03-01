@@ -40,8 +40,6 @@ import org.apache.http.entity.HttpEntityWrapper;
 
 /**
  * Wrapping entity that decompresses {@link #getContent content}.
- *
- *
  * <!-- empty lines above to avoid 'svn diff' context problems -->
  * @version $Revision$
  * 

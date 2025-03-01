@@ -123,7 +123,7 @@ public class HopwiseSplittingFileOutputter implements Appendable,
 				if (_basefileextension.equals("gz"))
 					is = new GZIPInputStream(Files.newInputStream(file.toPath()));
 				else
-					is = new BufferedInputStream(new FileInputStream(file));
+					is = new BufferedInputStream(Files.newInputStream(file.toPath()));
 
 				int data;
 				while ((data = is.read()) > -1)

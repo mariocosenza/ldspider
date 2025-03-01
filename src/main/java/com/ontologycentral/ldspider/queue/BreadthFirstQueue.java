@@ -22,121 +22,83 @@ import com.ontologycentral.ldspider.seen.Seen;
 
 public class BreadthFirstQueue extends RedirectsFavouringSpiderQueue {
 	private static final long serialVersionUID = 1L;
-
-	private static final  Logger _log = Logger.getLogger(BreadthFirstQueue.class.getName());
+	private static final Logger _log = Logger.getLogger(BreadthFirstQueue.class.getName());
 
 	Map<String, Queue<URI>> _queues;
 	Queue<String> _current;
-	
+
 	/**
 	 * Point in time of the last schedule or the last queue turnaround.
 	 */
 	long _time;
 
 	/**
-	 * Maxuris means maximum uris per pay-level-domain.
+	 * Maximum URIs per pay-level-domain.
 	 */
 	int _maxuris;
 
 	/**
-	 * Maxplds means keep only the max number of plds with the largest amount of
-	 * uris.
+	 * Maximum number of plds to keep.
 	 */
 	int _maxplds;
 
 	/**
-	 * If there are only _minActPlds left in the queue, the hop should be over.
-	 * This is to avoid pld starvation.
+	 * Minimum active plds; when reached, the hop should finish to avoid starvation.
 	 */
 	int _minActPlds;
 
 	/**
-	 * Scheduled frontiers should equal hops + 1, i.e. the 0st hop = the initial
-	 * seedlist = 1st scheduledFrontier.
+	 * Scheduled frontiers should equal hops+1.
 	 */
 	int _scheduledFrontiers;
 
 	/**
-	 * If _minActPlds has been reached and thus we should finish up soon.
+	 * Indicates if the minimum active plds have been reached.
 	 */
 	boolean _minReached;
 
 	/**
-	 * If the minActPlds limit should already apply in the downloading of the
-	 * seedlist.
+	 * Whether the minimum plds limit should already apply for the seedlist.
 	 */
 	boolean _minActPldsAlready4Seedlist;
 
-	/**
-	 * 
-	 * @param tldm
-	 * @param maxuris
-	 * @param maxplds
-	 */
 	public BreadthFirstQueue(TldManager tldm, Redirects redirs, Seen seen, int maxuris, int maxplds, int minActPlds, boolean minActPldsAlready4Seedlist) {
 		super(tldm, redirs, seen);
-
-		_maxuris = maxuris;
-		if (_maxuris == -1) {
-			_maxuris = Integer.MAX_VALUE-1;
-		}
-		
-		_maxplds = maxplds;
-		if (_maxplds == -1) {
-			_maxplds = Integer.MAX_VALUE-1;
-		}
-
+		_maxuris = (maxuris == -1) ? Integer.MAX_VALUE - 1 : maxuris;
+		_maxplds = (maxplds == -1) ? Integer.MAX_VALUE - 1 : maxplds;
 		_minActPlds = minActPlds;
-
 		_current = new ConcurrentLinkedQueue<>();
-
-		_queues = Collections
-				.synchronizedMap(new HashMap<>());
-
+		_queues = Collections.synchronizedMap(new HashMap<>());
 		_minReached = false;
-
 		_scheduledFrontiers = 0;
-		
 		_minActPldsAlready4Seedlist = minActPldsAlready4Seedlist;
-
 	}
-	
-	/**
-	 * Put URIs from frontier to queue
-	 * 
-	 */
-	public synchronized void schedule(Frontier f) {	
-		_log.info("start scheduling...");
 
+	/**
+	 * Schedules URIs from the frontier into the queue.
+	 */
+	public synchronized void schedule(Frontier f) {
+		_log.info("start scheduling...");
 		_minReached = false;
-		
 		long time = System.currentTimeMillis();
-		
-		// commented out because in super, there is actually nothing happening.
-		// Thus, I made schedule() abstract there.
-		// super.schedule(f);
 
 		_queues.clear();
+		for (URI u : f) {
+			if (!checkSeen(u)) {
+				add(u, true);
+			}
+		}
 
-        for (URI u : f) {
-            if (!checkSeen(u)) {
-                add(u, true);
-            }
-//			it.remove();
-        }
-
-		if (_minActPlds < 0)
+		// For cases where _minActPlds is disabled (<0)
+		if (_minActPlds < 0) {
 			for (String pld : _queues.keySet()) {
 				Queue<URI> q = _queues.get(pld);
-
-				// HACK to avoid hanging at slow servers
 				int maxuris = _maxuris;
 				for (String s : CrawlerConstants.SITES_SLOW) {
 					if (s.equals(pld)) {
 						maxuris = maxuris / CrawlerConstants.SLOW_DIV;
 					}
 				}
-
 				if (q.size() > maxuris) {
 					int n = 0;
 					ConcurrentLinkedQueue<URI> nq = new ConcurrentLinkedQueue<>();
@@ -148,140 +110,114 @@ public class BreadthFirstQueue extends RedirectsFavouringSpiderQueue {
 						}
 					}
 					q = nq;
-
 					_queues.put(pld, q);
 				}
 			}
+		}
 
 		List<String> lipld = getQueuePlds(_minActPlds < 0);
-		_log.info("sorted pld list (sorted only if maximum for plds or uris has been set) " + lipld.toString());
-		
+		_log.info("sorted pld list " + lipld.toString());
+
 		if (_maxplds < Integer.MAX_VALUE - 1) {
 			for (int i = _maxplds; i < lipld.size(); i++) {
 				String pld = lipld.get(i);
 				_queues.remove(pld);
-
 				_log.fine("removing " + pld);
 			}
 		}
-		
+
 		_current.addAll(_queues.keySet());
-		
-		//_current.addAll(lipld);
-		
-		// now just forgets what's happened in the previous round; means that we might
-		// starve of URIs but helps the crawler move on
-		if (f instanceof DiskFrontier) {
+
+		// Reset the frontier if it is a DiskFrontier, RankedFrontier, or SortingDiskFrontier.
+		if (f instanceof DiskFrontier || f instanceof RankedFrontier || f instanceof SortingDiskFrontier) {
 			f.reset();
 		}
-		
-		// Marks all URIs that have been scheduled as scheduled in the RankedFrontier.
-		if (f instanceof RankedFrontier)
-			f.reset();
-		
-		// Marks all URIs that have been scheduled as scheduled in the SortingDiskFrontier.
-		if (f instanceof SortingDiskFrontier)
-			f.reset();
-		
-		++_scheduledFrontiers;
 
+		++_scheduledFrontiers;
 		_time = System.currentTimeMillis();
 
 		_log.info("scheduling " + _current.size() + " plds done (" + size()
 				+ " URIs) in " + (_time - time) + " ms. This was schedule No. "
 				+ _scheduledFrontiers);
 		_log.info(toString());
+
+		// Notify waiting threads that new items are available.
+		notifyAll();
 	}
-		
+
 	/**
-	 * Poll a URI, one PLD after another. If queue turnaround is smaller than
-	 * DELAY, wait for DELAY ms to avoid overloading servers. Note that if there
-	 * are redirects to be processed, they are already returned by
-	 * {@link RedirectsFavouringSpiderQueue}. If {@link #_minActPlds} is used (>-1),
-	 * plds with many URIs are not favoured, otherwise they are.
-	 * 
-	 * @return URI
+	 * Polls a URI in a round-robin fashion, waiting if necessary rather than busy-waiting.
 	 */
 	protected synchronized URI pollInternal() {
 		if (_current == null) {
 			return null;
 		}
-		
+
 		URI next = null;
-		
-		long time = System.currentTimeMillis();
-		
-		int empty = 0;
+		long startTime = System.currentTimeMillis();
 
-		long time1;
-
-		do {	
-			time1 = System.currentTimeMillis();
-
-			// randomly start from the beginning of the queue to spread out lookupt to large sites
-			if (_current.isEmpty() || (_minActPlds < 0 && (time1 - _time) > CrawlerConstants.MAX_DELAY))
-			{                       // ^^ only consider max delay if minActPLDs is disabled 
-				// queue is empty, done for this round
+		while (true) {
+			long now = System.currentTimeMillis();
+			// If _current is empty or maximum delay exceeded, refresh the queue.
+			if (_current.isEmpty() || (_minActPlds < 0 && (now - _time) > CrawlerConstants.MAX_DELAY)) {
 				if (size() == 0) {
 					return null;
 				}
-							
-				if ((time1 - _time) < CrawlerConstants.MIN_DELAY) {
+				long elapsed = now - _time;
+				if (elapsed < CrawlerConstants.MIN_DELAY) {
+					long waitTime = CrawlerConstants.MIN_DELAY - elapsed;
 					try {
-						_log.info("delaying queue " + CrawlerConstants.MIN_DELAY + " ms ...");
-						Thread.sleep(CrawlerConstants.MIN_DELAY);
+						_log.info("Waiting for " + waitTime + " ms...");
+						wait(waitTime);
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
 				}
-				
-				_log.info("queue turnaround in " + (time1-_time) + " ms");
-
+				_log.info("Queue turnaround in " + (System.currentTimeMillis() - _time) + " ms");
 				_time = System.currentTimeMillis();
-
 				List<String> lipld = getQueuePlds(_minActPlds < 0);
-				
 				_current.addAll(lipld);
-				
 				if (_minActPlds > -1 && _current.size() < _minActPlds && (_minActPldsAlready4Seedlist || _scheduledFrontiers > 1)) {
 					_log.info("The minimum number of active PLDs has been reached. Finishing this round...");
 					_minReached = true;
 				}
 			}
-
-			if (_minReached)
+			if (_minReached) {
 				return null;
-			
+			}
 			String pld = _current.poll();
+			if (pld == null) {
+				// Nothing available, so wait briefly for new items.
+				try {
+					wait(CrawlerConstants.MIN_DELAY);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+				continue;
+			}
 			Queue<URI> q = _queues.get(pld);
-			
 			if (q != null && !q.isEmpty()) {
 				next = q.poll();
-				
 				if (checkSeen(next)) {
 					next = null;
-				} else {			
+				} else {
 					setSeen(next);
+					break;
 				}
-			} else {
-				empty++;
 			}
-		} while (next == null && empty < _queues.size());
-		
-		time1 = System.currentTimeMillis();
-		
-		_log.fine("poll for " + next + " done in " + (time1 - time) + " ms");
+		}
 
+		long endTime = System.currentTimeMillis();
+		_log.fine("Poll for " + next + " done in " + (endTime - startTime) + " ms");
 		return next;
 	}
-	
+
 	List<String> getSortedQueuePlds() {
 		return getQueuePlds(true);
 	}
-	
+
 	List<String> getQueuePlds(boolean sorted) {
 		List<String> li = new ArrayList<>();
-
 		for (String pld : _queues.keySet()) {
 			if (!_queues.get(pld).isEmpty()) {
 				li.add(pld);
@@ -289,52 +225,42 @@ public class BreadthFirstQueue extends RedirectsFavouringSpiderQueue {
 		}
 		if (sorted)
 			li.sort(new PldCountComparator(_queues));
-
 		return li;
 	}
-	
+
 	public synchronized void add(URI u, boolean uriHasAlreadyBeenProcessed) {
-		if (!uriHasAlreadyBeenProcessed)
+		if (!uriHasAlreadyBeenProcessed) {
 			try {
 				u = Frontier.normalise(u);
 			} catch (URISyntaxException e) {
-				_log.info(u +  " not parsable, skipping " + u);
+				_log.info(u + " not parsable, skipping " + u);
 				return;
 			}
-
+		}
 		String pld = _tldm.getPLD(u);
 		if (pld != null) {
-            Queue<URI> q = _queues.computeIfAbsent(pld, k -> new ConcurrentLinkedQueue<>());
-            // _current.add(pld);
-            q.add(u);
+			Queue<URI> q = _queues.computeIfAbsent(pld, k -> new ConcurrentLinkedQueue<>());
+			q.add(u);
+			// Notify waiting threads that a new URI is available.
+			notifyAll();
 		}
 	}
 
 	public int size() {
 		int size = super.size();
-		
 		for (Queue<URI> q : _queues.values()) {
 			size += q.size();
 		}
-		
 		return size;
 	}
-	
+
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		
 		for (String pld : _queues.keySet()) {
 			Queue<URI> q = _queues.get(pld);
-			sb.append(pld);
-			sb.append(": ");
-			sb.append(q.size());
-			sb.append("\n");
+			sb.append(pld).append(": ").append(q.size()).append("\n");
 		}
-		sb.append("Plus ");
-		sb.append(_redirectsQueue.size());
-		sb.append(" redirects.\n");
-		
+		sb.append("Plus ").append(_redirectsQueue.size()).append(" redirects.\n");
 		return sb.toString();
 	}
-
 }

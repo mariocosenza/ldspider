@@ -16,8 +16,7 @@ public class FetchFilterRdfXml implements FetchFilter {
 	ErrorHandler _eh;
 	
 	public FetchFilterRdfXml() {
-		;
-	}
+    }
 	
 	public void setErrorHandler(ErrorHandler eh) {
 		_eh = eh;	

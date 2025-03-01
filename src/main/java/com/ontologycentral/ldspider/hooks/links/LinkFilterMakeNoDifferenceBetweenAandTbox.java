@@ -13,11 +13,9 @@ public class LinkFilterMakeNoDifferenceBetweenAandTbox extends
 
 	@Override
 	protected synchronized void addABox(Node[] nx, int i) {
-		;
-	}
+    }
 
 	@Override
 	protected synchronized void addTBox(Node[] nx, int i) {
-		;
-	}
+    }
 }

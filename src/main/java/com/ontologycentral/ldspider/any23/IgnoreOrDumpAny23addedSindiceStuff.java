@@ -50,13 +50,12 @@ public class IgnoreOrDumpAny23addedSindiceStuff implements TripleHandler {
 
 	public void receiveTriple(Resource s, URI p, Value o, URI g,
 			ExtractionContext context) throws TripleHandlerException {
-		if (p.stringValue().startsWith(SINDICE.NS))
+		if (p.stringValue().startsWith(SINDICE.NS)) {
 			if (dumpHeaders)
 				headerTripleHandler.receiveTriple(s, p, o, g, context);
-			else
-				return;
-		else
+		} else {
 			blocker.receiveTriple(s, p, o, g, context);
+		}
 	}
 
 	public void receiveNamespace(String prefix, String uri,
@@ -64,8 +63,7 @@ public class IgnoreOrDumpAny23addedSindiceStuff implements TripleHandler {
 		blocker.receiveNamespace(prefix, uri, context);
 	}
 
-	public void closeContext(ExtractionContext context)
-			throws TripleHandlerException {
+	public void closeContext(ExtractionContext context) {
 		blocker.closeContext(context);
 	}
 

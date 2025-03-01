@@ -17,17 +17,11 @@ import com.ontologycentral.ldspider.CrawlerConstants;
 import com.ontologycentral.ldspider.hooks.error.ErrorHandler;
 import com.ontologycentral.ldspider.http.ConnectionManager;
 
-/**
- * 
- * @author andhar
- *
- */
-		
 public class Robot {
 	Logger _log = Logger.getLogger(this.getClass().getName());
 
 	NoRobotClient _nrc = null;
-	
+
 	public Robot(ConnectionManager cm, ErrorHandler eh, URI host) {
 		URI robotsOnHost;
 		try {
@@ -42,22 +36,14 @@ public class Robot {
 		long time1 = System.currentTimeMillis();
 		long bytes = -1;
 		int status = 0;
-//		String type = null;
-
 		Header[] headers = null;
-		
+
 		try {
 			HttpResponse hres = cm.connect(hget);
 			HttpEntity hen = hres.getEntity();
 
 			status = hres.getStatusLine().getStatusCode();
-
 			headers = hres.getAllHeaders();
-			
-//			Header ct = hres.getFirstHeader("Content-Type");
-//			if (ct != null) {
-//				type = hres.getFirstHeader("Content-Type").getValue();
-//			}
 
 			if (status == 200) {
 				if (hen != null) {
@@ -74,8 +60,7 @@ public class Robot {
 							// the path must be "/" for compatibility with norbert.
 							_nrc.parse(
 									content,
-									(new URI(host.getScheme(), host
-											.getAuthority(), "/", null, null))
+									(new URI(host.getScheme(), host.getAuthority(), "/", null, null))
 											.toURL());
 						else
 							_nrc.parse(content, host.toURL());
@@ -92,31 +77,30 @@ public class Robot {
 
 			if (hen != null) {
 				bytes = hen.getContentLength();
-				hen.consumeContent();
+				EntityUtils.consume(hen);
 			} else {
 				hget.abort();
 			}
 		} catch (Exception e) {
 			eh.handleError(robotsOnHost, e);
-			hget.abort();			
+			hget.abort();
 		}
 
 		if (status != 0) {
-			eh.handleStatus(robotsOnHost, status, headers, (System.currentTimeMillis()-time1), bytes);
+			eh.handleStatus(robotsOnHost, status, headers, (System.currentTimeMillis() - time1), bytes);
 		}
 	}
 
 	public boolean isUrlAllowed(URL uri) {
-		try{
+		try {
 			if (_nrc == null) {
 				_log.fine("_nrc == null ");
-    			return true;
-    		}
-
-    		return _nrc.isUrlAllowed(uri);
-		} catch(Exception ex){
+				return true;
+			}
+			return _nrc.isUrlAllowed(uri);
+		} catch(Exception ex) {
 			ex.printStackTrace();
-			return true;			
+			return true;
 		}
-    }
+	}
 }

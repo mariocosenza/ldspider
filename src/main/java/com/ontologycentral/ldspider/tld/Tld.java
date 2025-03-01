@@ -15,30 +15,30 @@ public class Tld implements Serializable{
 	
 	// 2-level suffixes in addition to 1-level
 	// e.g. com.fr (as well as .fr)
-	private ArrayList<String> addlTwoLvlSffxes;
+	private final ArrayList<String> addlTwoLvlSffxes;
 	
 	// 3-level suffixes in addition to 1 or 2-level
 	// e.g. act.edu.au (as well as *.au)
-	private ArrayList<String> addlThreeLvlSffxes;
+	private final ArrayList<String> addlThreeLvlSffxes;
 	
 	// 3-level suffixes in addition to 1 or 2-level, but with wildcards
 	// e.g. *.sch.uk
-	private ArrayList<String> addlWildcardThreeLvlSffxes;
+	private final ArrayList<String> addlWildcardThreeLvlSffxes;
 	
 	// domains with 1-level suffixes in exception to 2 or 3-level
 	// e.g. bl.uk has uk instead of *.uk
-	private ArrayList<String> excptnlTwoLvlDomains;
+	private final ArrayList<String> excptnlTwoLvlDomains;
 	
 	// domains with 2-level suffixes in exception to 3-level 
 	// e.g. metro.tokyo.jp has tokyo.jp instead of *.tokyo.uk
-	private ArrayList<String> excptnlThreeLvlDomains;
+	private final ArrayList<String> excptnlThreeLvlDomains;
 	
 	public Tld(String tld) {
-		addlTwoLvlSffxes = new ArrayList<String>();
-		addlThreeLvlSffxes = new ArrayList<String>();
-		addlWildcardThreeLvlSffxes  = new ArrayList<String>();
-		excptnlTwoLvlDomains = new ArrayList<String>();
-		excptnlThreeLvlDomains = new ArrayList<String>();
+		addlTwoLvlSffxes = new ArrayList<>();
+		addlThreeLvlSffxes = new ArrayList<>();
+		addlWildcardThreeLvlSffxes  = new ArrayList<>();
+		excptnlTwoLvlDomains = new ArrayList<>();
+		excptnlThreeLvlDomains = new ArrayList<>();
 		hasOneLvlSffxes = false;
 	}
 	

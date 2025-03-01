@@ -123,9 +123,9 @@ public class Util {
 					throw new UnsupportedOperationException();
 				}
 			};
-		};
+		}
 
-	}
+    }
 
 	public static class StringToURIiterable implements Iterable<URI> {
 		final Iterable<String> _it;

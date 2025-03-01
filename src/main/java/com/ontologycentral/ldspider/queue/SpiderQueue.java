@@ -58,7 +58,7 @@ public abstract class SpiderQueue implements Serializable{
 		
 		_redirs.put(from, to);
 		
-		Integer i = null;
+		Integer i;
 		if ((i = _redirsCache.get(from)) != null) {
 			_redirsCache.remove(from);
 			_redirsCache.put(to, i = i + 1);

@@ -47,8 +47,6 @@ import com.ontologycentral.ldspider.http.ConnectionManager;
 
 /**
  * Client-side interceptor to handle Gzip-compressed responses.
- *
- *
  * <!-- empty lines above to avoid 'svn diff' context problems -->
  * @version $Revision$
  * 

@@ -49,8 +49,7 @@ public class LinkFilterDefault implements LinkFilter {
 	}
 
 	public void startDocument() {
-		;
-	}
+    }
 	
 	public void endDocument() {
 		_log.info("document done");

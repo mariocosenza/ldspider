@@ -2,7 +2,6 @@ package com.ontologycentral.ldspider.frontier;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -122,8 +121,7 @@ class DiskFrontierIterator implements Iterator<URI> {
 	}
 
 	public void remove() {
-		;
-	}
+    }
 
 	void readNext() throws IOException, URISyntaxException {
 		String line;

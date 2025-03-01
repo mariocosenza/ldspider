@@ -4,25 +4,15 @@ import java.io.IOException;
 
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
-import org.apache.http.HttpVersion;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.params.HttpClientParams;
-import org.apache.http.conn.ClientConnectionManager;
-import org.apache.http.conn.params.ConnManagerParams;
-import org.apache.http.conn.params.ConnRoutePNames;
-import org.apache.http.conn.scheme.PlainSocketFactory;
-import org.apache.http.conn.scheme.Scheme;
-import org.apache.http.conn.scheme.SchemeRegistry;
-import org.apache.http.conn.ssl.SSLSocketFactory;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
-import org.apache.http.params.BasicHttpParams;
-import org.apache.http.params.CoreConnectionPNames;
-import org.apache.http.params.HttpParams;
-import org.apache.http.params.HttpProtocolParams;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 
 import com.ontologycentral.ldspider.CrawlerConstants;
 import com.ontologycentral.ldspider.http.internal.CloseIdleConnectionThread;
@@ -31,75 +21,82 @@ import com.ontologycentral.ldspider.http.internal.ResponseGzipUncompress;
 
 public class ConnectionManager {
 
-    private final DefaultHttpClient _client;
-
+	private CloseableHttpClient _client;
+	private final PoolingHttpClientConnectionManager cm;
+	private final RequestConfig requestConfig;
+	private final CredentialsProvider credsProvider;
 	private final CloseIdleConnectionThread _ciThread;
 
-    
-    public ConnectionManager(String proxyHost, int proxyPort, String puser, String ppassword, int connections) {
-    	// general setup
-    	SchemeRegistry supportedSchemes = new SchemeRegistry();
+	public ConnectionManager(String proxyHost, int proxyPort, String puser, String ppassword, int connections) {
+		// Create a pooling connection manager
+		cm = new PoolingHttpClientConnectionManager();
+		cm.setMaxTotal(connections);
+		cm.setDefaultMaxPerRoute(connections);
 
-    	// Register the "http" and "https" protocol schemes, they are
-    	// required by the default operator to look up socket factories.
-    	supportedSchemes.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
-    	supportedSchemes.register(new Scheme("https", SSLSocketFactory.getSocketFactory(), 443));
+		// Build request configuration
+		RequestConfig.Builder requestConfigBuilder = RequestConfig.custom();
+		requestConfigBuilder.setSocketTimeout(CrawlerConstants.SOCKET_TIMEOUT);
+		requestConfigBuilder.setConnectTimeout(CrawlerConstants.CONNECTION_TIMEOUT);
+		requestConfigBuilder.setRedirectsEnabled(false); // handle redirects manually
 
-    	// prepare parameters
-    	HttpParams params = new BasicHttpParams();
-    	HttpProtocolParams.setVersion(params, HttpVersion.HTTP_1_1);
-    	HttpProtocolParams.setContentCharset(params, "UTF-8");
-    	HttpProtocolParams.setUseExpectContinue(params, true);
-    	
-    	// we deal with redirects ourselves
-    	HttpClientParams.setRedirecting(params, false);
+		if (proxyHost != null) {
+			HttpHost proxy = new HttpHost(proxyHost, proxyPort, "http");
+			requestConfigBuilder.setProxy(proxy);
+		}
+		requestConfig = requestConfigBuilder.build();
 
-    	//connection params 
-    	params.setParameter(CoreConnectionPNames.SO_TIMEOUT, CrawlerConstants.SOCKET_TIMEOUT);
-    	params.setParameter(CoreConnectionPNames.TCP_NODELAY, true);
-    	params.setParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, CrawlerConstants.CONNECTION_TIMEOUT);
+		// Set up credentials if a proxy user is provided
+		if (proxyHost != null && puser != null) {
+			credsProvider = new BasicCredentialsProvider();
+			credsProvider.setCredentials(new AuthScope(proxyHost, proxyPort),
+					new UsernamePasswordCredentials(puser, ppassword));
+		} else {
+			credsProvider = null;
+		}
 
-    	ConnManagerParams.setMaxTotalConnections(params, connections);
-    	ClientConnectionManager cm = new ThreadSafeClientConnManager(params, supportedSchemes);
-    	
-    	_client = new DefaultHttpClient(cm, params);
-    	_client.addResponseInterceptor(new ResponseGzipUncompress());
+		// Build the HTTP client with gzip response interceptor
+		_client = HttpClients.custom()
+				.setConnectionManager(cm)
+				.setDefaultRequestConfig(requestConfig)
+				.setDefaultCredentialsProvider(credsProvider)
+				.addInterceptorFirst(new ResponseGzipUncompress())
+				.build();
 
-    	// check if we have a proxy
-    	if (proxyHost != null) {
-    		HttpHost proxy = new HttpHost(proxyHost, proxyPort, "http");
-    		_client.getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY, proxy);
-    		
-    		if (puser != null) {
-    			_client.getCredentialsProvider().setCredentials(
-    					new AuthScope(proxyHost, proxyPort),
-    					new UsernamePasswordCredentials(puser, ppassword));
-    		}
-    	}
- 	
-    	_ciThread = new CloseIdleConnectionThread(cm, CrawlerConstants.CLOSE_IDLE);
-    	_ciThread.start();
-    }
-    
-    public void setRetries(int no) {
-    	// set the retry handler
-    	if (no > 0) {
-    		HttpRequestRetryHandler retryHandler = new HttpRequestRetryHandler(no);
-    		_client.setHttpRequestRetryHandler(retryHandler);
-    	}
-    }
+		// Start the idle connection closing thread
+		_ciThread = new CloseIdleConnectionThread(cm, CrawlerConstants.CLOSE_IDLE);
+		_ciThread.start();
+	}
 
-    public void shutdown() {
-    	_ciThread.shutdown();
-    	if(_ciThread.isAlive()){
-    		_ciThread.interrupt();
-    	}
-    	_client.getConnectionManager().shutdown();
-    	
+	public void setRetries(int no) {
+		// Rebuild the client with a retry handler if needed.
+		if (no > 0) {
+			HttpRequestRetryHandler retryHandler = new HttpRequestRetryHandler(no);
+			CloseableHttpClient newClient = HttpClients.custom()
+					.setConnectionManager(cm)
+					.setDefaultRequestConfig(requestConfig)
+					.setDefaultCredentialsProvider(credsProvider)
+					.setRetryHandler(retryHandler)
+					.addInterceptorFirst(new ResponseGzipUncompress())
+					.build();
+			try {
+				_client.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			_client = newClient;
+		}
+	}
 
-    }
+	public void shutdown() {
+		_ciThread.shutdown();
+		try {
+			_client.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 
-    public HttpResponse connect(HttpGet get) throws IOException {
-    	return _client.execute(get);
-    }
+	public HttpResponse connect(HttpGet get) throws IOException {
+		return _client.execute(get);
+	}
 }

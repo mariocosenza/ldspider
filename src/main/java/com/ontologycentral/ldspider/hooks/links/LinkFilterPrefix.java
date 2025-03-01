@@ -30,13 +30,8 @@ public class LinkFilterPrefix extends LinkFilterDefault {
 	public void setErrorHandler(ErrorHandler eh) {
 	}
 
-	public void startDocument() {
-		;
-	}
-	
-	public void endDocument() {
-		;
-	}
+    public void endDocument() {
+    }
 	
 	@Override
 	protected void addABox(Node[] nx, int i) {

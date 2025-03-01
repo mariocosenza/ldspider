@@ -12,14 +12,14 @@ import java.util.Map;
 import java.util.Set;
 
 public class RankedFrontier extends Frontier {
-	
+
 	// Keeps an "eternal" list of URIs for the rank to take into account
 	// all hops. Maybe a different implementation could save RAM.
 	Map<String, Integer> _data;
 	Set<URI> _unscheduledUris;
 
 	final Object lock = new Object();
-	
+
 	public RankedFrontier() {
 		super();
 		_data = Collections.synchronizedMap(new HashMap<>());
@@ -28,7 +28,7 @@ public class RankedFrontier extends Frontier {
 
 	public void add(URI u) {
 		u = process(u);
-		
+
 		if (u != null) {
 			Integer count;
 			_unscheduledUris.add(u);
@@ -46,16 +46,15 @@ public class RankedFrontier extends Frontier {
 	}
 
 	public void remove(URI u) {
-		_data.remove(u);
+		_data.remove(u.toString());
 		_unscheduledUris.remove(u);
 	}
 
 	public Iterator<URI> iterator() {
 
-        final List<URI> li = new ArrayList<>(_unscheduledUris);
-
+		final List<URI> li = new ArrayList<>(_unscheduledUris);
 		li.sort(new DescendingCountComparatorAlph<>(_data));
-		
+
 		return new Iterator<URI>() {
 			final Iterator<URI> it = li.iterator();
 			URI currentUri;
@@ -69,7 +68,7 @@ public class RankedFrontier extends Frontier {
 			}
 
 			public void remove() {
-				_data.remove(currentUri);
+				_data.remove(currentUri.toString());
 				_unscheduledUris.remove(currentUri);
 			}
 		};

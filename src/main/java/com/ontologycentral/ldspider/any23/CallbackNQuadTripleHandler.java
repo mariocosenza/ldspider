@@ -66,8 +66,7 @@ public class CallbackNQuadTripleHandler implements TripleHandler {
 		_cb.processStatement(nx);
 	}
 
-	private org.semanticweb.yars.nx.Resource convert(org.openrdf.model.URI arg0)
-			throws TripleHandlerException {
+	private org.semanticweb.yars.nx.Resource convert(org.openrdf.model.URI arg0) {
 		java.net.URI uri;
 		org.semanticweb.yars.nx.Resource res;
 		try {
@@ -93,12 +92,12 @@ public class CallbackNQuadTripleHandler implements TripleHandler {
 	 * @return the BNode in NxParser's terms
 	 */
 	private org.semanticweb.yars.nx.BNode convert(BNode arg0,
-			org.semanticweb.yars.nx.Resource context) throws TripleHandlerException {
+			org.semanticweb.yars.nx.Resource context) {
 		return org.semanticweb.yars.nx.BNode.createBNode(context.toN3()
 				.substring(1, context.toN3().length() - 1), arg0.stringValue());
 	}
 
-	private org.semanticweb.yars.nx.Literal convert(Literal arg0) throws TripleHandlerException{
+	private org.semanticweb.yars.nx.Literal convert(Literal arg0) {
 		String value = NxUtil.escapeForNx(arg0.getLabel());
 		String language;
 		org.semanticweb.yars.nx.Resource datatype = null;
@@ -118,41 +117,32 @@ public class CallbackNQuadTripleHandler implements TripleHandler {
 
 	@Override
 	public void close() throws TripleHandlerException {
-		;
-	}
+    }
 
 	@Override
-	public void closeContext(ExtractionContext arg0)
-			throws TripleHandlerException {
-		;
-	}
+	public void closeContext(ExtractionContext arg0) {
+    }
 
 	@Override
 	public void endDocument(URI arg0) throws TripleHandlerException {
-		;
-	}
+    }
 
 	@Override
-	public void openContext(ExtractionContext arg0)
-			throws TripleHandlerException {
-		;
-	}
+	public void openContext(ExtractionContext arg0) {
+    }
 
 	@Override
 	public void receiveNamespace(String arg0, String arg1,
-			ExtractionContext arg2) throws TripleHandlerException {
-		;
-	}
+			ExtractionContext arg2) {
+    }
 
 	@Override
 	public void setContentLength(long arg0) {
-		;
-	}
+    }
 
 	@Override
 	public void startDocument(URI arg0) throws TripleHandlerException {
-		;
-	}
+    }
 
 
 }

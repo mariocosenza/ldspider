@@ -31,13 +31,8 @@ public class LinkFilterDomain extends LinkFilterDefault {
 		_hosts.add(pld);
 	}
 
-	public void startDocument() {
-		;
-	}
-	
-	public void endDocument() {
-		;
-	}
+    public void endDocument() {
+    }
 	
 	/**
 	 * Adds a new uri to the frontier.

@@ -22,8 +22,7 @@ public class SinkDummy implements Sink {
 	
 
 	public void close() {
-		;
-	}
+    }
 
 	/**
 	 * Do nothing
@@ -32,15 +31,12 @@ public class SinkDummy implements Sink {
 	 */
 	private static class CallbackDummy implements Callback {
 		public void startDocument() {
-			;
-		}
+        }
 		
 		public void endDocument() {
-			;
-		}
+        }
 
 		public void processStatement(Node[] nx) {
-			;
-		}
+        }
 	}
 }

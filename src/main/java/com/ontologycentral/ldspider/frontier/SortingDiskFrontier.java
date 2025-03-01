@@ -4,8 +4,6 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.Closeable;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -146,7 +144,7 @@ public class SortingDiskFrontier extends Frontier implements Closeable {
 					: _currentTempFile;
 
 			InputStream is = _gzipFrontier ? new GZIPInputStream(
-                    Files.newInputStream(file.toPath())) : new FileInputStream(file);
+                    Files.newInputStream(file.toPath())) : Files.newInputStream(file.toPath());
 
 			br = new BufferedReader(new InputStreamReader(is));
 
@@ -178,13 +176,12 @@ public class SortingDiskFrontier extends Frontier implements Closeable {
 		out.deleteOnExit();
 		
 		if (_gzipFrontier) {
-			is = new GZIPInputStream(
-					new FileInputStream(in));
+			is = new GZIPInputStream(Files.newInputStream(in.toPath()));
 			os = new GZIPOutputStream(
                     Files.newOutputStream(out.toPath()));
 		} else {
 			is = Files.newInputStream(in.toPath());
-			os = new FileOutputStream(out);
+			os = Files.newOutputStream(out.toPath());
 		}
 		
 		BufferedReader br = new BufferedReader(new InputStreamReader(is));

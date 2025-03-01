@@ -19,14 +19,9 @@ public class LinkFilterSelect extends LinkFilterDefault{
 		_log.info("link predicate is " + linkPredicates);
 		_isAllowRule = isAllowRule;
 	}
-	
-	public void startDocument() {
-		;
-	}
-	
-	public void endDocument() {
-		;
-	}
+
+    public void endDocument() {
+    }
 
 	/**
 	 *  isAllowed predMatch Crawl
@@ -46,10 +41,7 @@ public class LinkFilterSelect extends LinkFilterDefault{
 		if(_isAllowRule == _predicates.contains(nx[1])){
 			super.processStatement(nx);
 			_log.info("Select link from "+nx[1]);
-		} else {
-			return;
 		}
-
 
 	}
 }

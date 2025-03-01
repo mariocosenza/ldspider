@@ -12,7 +12,7 @@ public class DummyRedirects implements Redirects {
 	private final static Logger _log = Logger.getLogger(DummyRedirects.class.getName());
 
 	public void put(URI from, URI to) {
-		return;
+
 	}
 	
 	public URI getRedirect(URI from) {

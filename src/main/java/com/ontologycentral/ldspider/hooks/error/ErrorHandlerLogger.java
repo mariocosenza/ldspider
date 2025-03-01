@@ -19,13 +19,12 @@ import org.apache.http.Header;
 import org.semanticweb.yars.nx.Node;
 import org.semanticweb.yars.nx.Resource;
 import org.semanticweb.yars.nx.parser.Callback;
-import org.semanticweb.yars.nx.parser.NxParser;
 
 import com.ontologycentral.ldspider.CrawlerConstants;
 
 public class ErrorHandlerLogger implements ErrorHandler {
 	Logger _log = Logger.getLogger(this.getClass().getName());
-	
+
 	public static int RESOLUTION = 100;
 
 	List<ObjectThrowable> _errors;
@@ -41,15 +40,15 @@ public class ErrorHandlerLogger implements ErrorHandler {
 
 	protected final Map<Integer, Integer> _time;
 	protected final Map<Integer, Integer> _rotime;
-	
+
 	Appendable _logger;
-	
+
 	Callback _redirects;
-	
+
 	boolean _summary;
-	
+
 	long _lookups;
-	
+
 	final String lineSeparator = System.lineSeparator();
 
 	SimpleDateFormat _df;
@@ -57,31 +56,31 @@ public class ErrorHandlerLogger implements ErrorHandler {
 	public ErrorHandlerLogger(Appendable out, Callback redirects) {
 		this(out, redirects, false);
 	}
-	
+
 	/**
 	 * logging redirects to file
 	 */
 	public ErrorHandlerLogger(Appendable out, Callback redirects, boolean summary) {
 		_logger = out;
-		
+
 		_summary = summary;
 
 		_redirects = redirects;
-		
+
 		_errors = Collections.synchronizedList(new ArrayList<>());
-		
+
 		_status = Collections.synchronizedMap(new TreeMap<>());
 		_rostatus = Collections.synchronizedMap(new TreeMap<>());
 
 		_cache = Collections.synchronizedMap(new TreeMap<>());
 		_rocache = Collections.synchronizedMap(new TreeMap<>());
-		
+
 		_type = Collections.synchronizedMap(new TreeMap<>());
 		_rotype = Collections.synchronizedMap(new TreeMap<>());
-		
+
 		_time = Collections.synchronizedMap(new TreeMap<>());
 		_rotime = Collections.synchronizedMap(new TreeMap<>());
-		
+
 		_lookups = 0;
 
 		_df = new SimpleDateFormat("dd/MMM/yyyy:HH:mm:ss Z", Locale.US);
@@ -106,7 +105,7 @@ public class ErrorHandlerLogger implements ErrorHandler {
 	public void handleStatus(URI u, int status, Header[] headers, long duration, long contentLength) {
 		String type = null;
 		String cache = "MISS";
-		
+
 		if (headers != null) {
 			for (Header h : headers) {
 				String name = h.getName().toLowerCase();
@@ -124,12 +123,12 @@ public class ErrorHandlerLogger implements ErrorHandler {
 				}
 			}
 		}
-		
+
 		if ("/robots.txt".equals(u.getPath())) {
 			increment(_rostatus, status);
 			increment(_rocache, cache);
 			increment(_rotype, type);
-			
+
 			int tbracket = (int)((float)duration/(float)RESOLUTION);
 			increment(_rotime, tbracket);
 		} else {
@@ -139,7 +138,7 @@ public class ErrorHandlerLogger implements ErrorHandler {
 
 			int tbracket = (int)((float)duration/(float)RESOLUTION);
 			increment(_time, tbracket);
-			
+
 			if (status != CrawlerConstants.SKIP_SUFFIX && status != CrawlerConstants.SKIP_ROBOTS) {
 				_lookups++;
 			}
@@ -170,13 +169,12 @@ public class ErrorHandlerLogger implements ErrorHandler {
 					_logger.append(sb);
 					_logger.append(lineSeparator);
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
-		} 
+		}
 	}
-	
+
 	<T> void increment(Map<T, Integer> m, T key) {
 		if (_summary) {
 			if (key != null) {
@@ -197,7 +195,7 @@ public class ErrorHandlerLogger implements ErrorHandler {
 		else
 			return "";
 	}
-	
+
 	public String summaryToString() {
 		StringBuilder sb = new StringBuilder();
 
@@ -228,15 +226,15 @@ public class ErrorHandlerLogger implements ErrorHandler {
 			int start = en.getKey() * RESOLUTION;
 			sb.append(start).append("-").append(start + (RESOLUTION - 1)).append(": ").append(en.getValue()).append("\n");
 		}
-		
+
 		sb.append("\n");
-		
+
 		return sb.toString();
 	}
-	
+
 	public StringBuffer toStringBuffer(Map<?, Integer> map) {
 		StringBuffer sb = new StringBuffer();
-		
+
 		int sum = 0;
 		for (Map.Entry<?, Integer> en : map.entrySet()) {
 			sb.append(en.getKey()).append(": ").append(en.getValue()).append("\n");
@@ -246,12 +244,12 @@ public class ErrorHandlerLogger implements ErrorHandler {
 		sb.append("total: ");
 		sb.append(sum);
 		sb.append("\n");
-		
+
 		return sb;
 	}
-	
+
 	public void close() {
-		if(_logger != null && _logger instanceof Closeable) {
+		if (_logger != null && _logger instanceof Closeable) {
 			try {
 				((Closeable)_logger).close();
 			} catch (IOException e) {
@@ -264,15 +262,15 @@ public class ErrorHandlerLogger implements ErrorHandler {
 		if (_redirects != null) {
 			Node[] nx = new Node[2];
 
-			nx[0] = new Resource(NxParser.escapeForNx(from.toString()));
+			nx[0] = new Resource(from.toString());
 			try {
-				nx[1] = new Resource(NxParser.escapeForNx(new URI(to.getScheme(), to.getAuthority(), to.getPath(), to.getQuery(), to.getFragment()).toString()));
+				nx[1] = new Resource(new URI(to.getScheme(), to.getAuthority(), to.getPath(), to.getQuery(), to.getFragment()).toString());
 			} catch (URISyntaxException e) {
 				_log.info("problems with " + to);
-				nx[1] = new Resource(NxParser.escapeForNx(to.toString()));
+				nx[1] = new Resource(to.toString());
 			}
 
-			_redirects.processStatement(nx);		
+			_redirects.processStatement(nx);
 		}
 	}
 
@@ -285,24 +283,15 @@ public class ErrorHandlerLogger implements ErrorHandler {
 	 */
 	public long lookups() {
 		return _lookups;
-		
-//		long size = 0;
-//		for (Integer status : _status.keySet()) {
-//			if (status != CrawlerConstants.SKIP_SUFFIX && status != CrawlerConstants.SKIP_ROBOTS) {
-//				size += _status.get(status);
-//			}
-//		}
-//
-//		return size;
 	}
 
 	public void handleLink(Node from, Node to) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	public void handleNextRound() {
 		// TODO Auto-generated method stub
-		
+
 	}
 }

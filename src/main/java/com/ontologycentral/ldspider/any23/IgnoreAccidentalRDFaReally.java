@@ -191,7 +191,6 @@ public class IgnoreAccidentalRDFaReally implements TripleHandler {
 	 * http://example.org/blashortcut derived from a document
 	 * http://example.org/bla containing &lt;link rel="shortcut icon"&gt; in the
 	 * HTML header.
-	 * 
 	 * Some RDFa parsers like pyRdfa drop them straight away, but not the one
 	 * that is in any23 at the moment (as of any23 version 0.9.0).
 	 * 

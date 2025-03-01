@@ -2,39 +2,29 @@ package com.ontologycentral.ldspider;
 
 import java.io.PrintStream;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
-public class Monitor extends Thread {
-	int _sleeptime;	
-	private final List<Thread> _threads;
-	PrintStream _pw;
-	
-	boolean _stop;
-	
-	public Monitor(List<Thread> threads, PrintStream pw, int sleeptime) {
-		_threads = threads;
-		_pw = pw;
-		_stop = false;
-		_sleeptime = sleeptime;
+public class Monitor {
+	private final ScheduledExecutorService scheduler;
+
+    public Monitor(List<Thread> threads, PrintStream pw, int intervalMillis) {
+        scheduler = Executors.newSingleThreadScheduledExecutor();
+		// The monitoring task is scheduled immediately.
+		scheduler.scheduleAtFixedRate(() -> {
+			for (Thread t : threads) {
+				pw.println(t.getName());
+			}
+		}, 0, intervalMillis, TimeUnit.MILLISECONDS);
 	}
-	
+
+	// Added start() method for compatibility with existing code.
+	public void start() {
+		// No action needed since the scheduler starts in the constructor.
+	}
+
 	public void shutdown() {
-		_stop = true;
-		interrupt();
-	}
-
-	public void run() {
-		while (!_stop) {
-			for (Thread t : _threads) {
-				_pw.println(t.getName());
-			}
-
-			try {
-				Thread.sleep(_sleeptime);
-			} catch (InterruptedException e) {
-				if (!_stop) {
-					e.printStackTrace();
-				}
-			}
-		}
+		scheduler.shutdownNow();
 	}
 }

@@ -10,28 +10,24 @@ import org.semanticweb.yars.nx.Node;
 public class ErrorHandlerDummy implements ErrorHandler {
 
 	public void handleError(URI u, Throwable e) {
-		;
-	}
+    }
 	
 	public void close() {
-		;
-	}
+    }
 
 	public long lookups() {
 		return 0;
 	}
 
 	public void handleRedirect(URI from, URI to, int status) {
-		;
-	}
+    }
 
 	public Iterator<ObjectThrowable> iterator() {
 		return Collections.emptyIterator();
 	}
 
 	public void handleStatus(URI u, int status, Header[] headers, long duration, long contentLength) {
-		;
-	}
+    }
 
 	public void handleLink(Node from, Node to) {
 		// TODO Auto-generated method stub

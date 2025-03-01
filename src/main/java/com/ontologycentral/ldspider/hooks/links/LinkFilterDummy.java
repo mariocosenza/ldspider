@@ -21,26 +21,20 @@ public class LinkFilterDummy implements LinkFilter {
 	}
 	
 	public void setFollowABox(boolean follow) {
-		;
-	}
+    }
 
 	public void setFollowTBox(boolean follow) {
-		;
-	}
+    }
 
 	public void startDocument() {
-		;
-	}
+    }
 	
 	public void endDocument() {
-		;
-	}
+    }
 
 	public void processStatement(Node[] arg0) {
-		;
-	}
+    }
 
 	public void setErrorHandler(ErrorHandler eh) {
-		;
-	}
+    }
 }

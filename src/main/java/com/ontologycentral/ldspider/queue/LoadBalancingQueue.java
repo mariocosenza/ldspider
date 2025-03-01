@@ -201,7 +201,7 @@ public class LoadBalancingQueue extends RedirectsFavouringSpiderQueue {
 		
 		li.addAll(_queues.keySet());
 		
-		Collections.sort(li, new PldCountComparator(_queues));
+		li.sort(new PldCountComparator(_queues));
 		
 		return li;
 	}
