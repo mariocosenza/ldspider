@@ -175,7 +175,7 @@ public class ContentHandlerAny23 implements ContentHandler {
 		// get extractors
 		Iterator<ExtractorFactory<?>> it = ExtractorRegistryImpl.getInstance()
 				.getExtractorGroup().iterator();
-		List<MIMEType> mTypes = new ArrayList<MIMEType>();
+		List<MIMEType> mTypes = new ArrayList<>();
 		while (it.hasNext()) {
 			ExtractorFactory<?> ef = it.next();
 			mTypes.addAll(ef.getSupportedMIMETypes());

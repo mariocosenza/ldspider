@@ -26,10 +26,7 @@ public class FetchFilterMimeTypesOfContentHandler implements FetchFilter {
 		Header ct = hen.getContentType();
 		if (ct != null) {
 			String mime = hen.getContentType().getValue();
-			if (_ch.canHandle(mime))
-				return true;
-			else
-				return false;
+            return _ch.canHandle(mime);
 		} else {
 			if (_eh != null)
 				_eh.handleError(u, new IOException(

@@ -9,8 +9,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import org.apache.http.protocol.HTTP;
-
 import com.ontologycentral.ldspider.hooks.error.ErrorHandler;
 import com.ontologycentral.ldspider.hooks.error.ErrorHandlerDummy;
 import com.ontologycentral.ldspider.http.ConnectionManager;
@@ -27,7 +25,7 @@ public class Robots {
 
 	Map<String, Robot> _robots;
 
-	private ConnectionManager _cm;
+	private final ConnectionManager _cm;
 	
     private ErrorHandler _eh;
 
@@ -36,7 +34,7 @@ public class Robots {
 		
 		_eh = new ErrorHandlerDummy();
 		
-		_robots = Collections.synchronizedMap(new HashMap<String, Robot>());
+		_robots = Collections.synchronizedMap(new HashMap<>());
 	}	
 	
     public void setErrorHandler(ErrorHandler eh) {
@@ -45,7 +43,7 @@ public class Robots {
     
     public boolean accessOk(URI uri) {
     	URI hostUri;
-    	URL url = null;
+    	URL url;
 		try {
 			if (uri.getPort() < 0) {
 				// The URI has no port specified. The most likely case.
@@ -82,7 +80,7 @@ public class Robots {
 			return false;
 		}
 
-		Robot r = null;
+		Robot r;
 
 		if (_robots.containsKey(hostUri.toString())) {
 			r = _robots.get(hostUri.toString());

@@ -24,7 +24,7 @@ public class LinkFilterDomain extends LinkFilterDefault {
 	
 	public LinkFilterDomain(Frontier f) {
 		super(f);
-		_hosts = new HashSet<String>();
+		_hosts = new HashSet<>();
 	}
 	
 	public void addHost(String pld) {

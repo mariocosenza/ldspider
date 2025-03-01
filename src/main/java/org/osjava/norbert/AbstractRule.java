@@ -36,7 +36,7 @@ package org.osjava.norbert;
  */
 abstract class AbstractRule implements Rule {
 
-    private String path;
+    private final String path;
 
     public AbstractRule(String path) {
         this.path = path.trim();

@@ -4,6 +4,7 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.logging.Logger;
 
 import org.semanticweb.yars.nx.Node;
@@ -28,7 +29,7 @@ public class SinkSparul implements Sink {
 	/** SPARQL/Update endpoint */
 	private final String _endpoint;
 
-	private boolean _includeProvenance;
+	private final boolean _includeProvenance;
 
 	private final String _graphUri;
 
@@ -130,7 +131,7 @@ public class SinkSparul implements Sink {
 			_connection.setDoOutput(true);
 			_connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
 			_connection.setRequestProperty("Accept", "application/rdf+xml");
-			_writer = new OutputStreamWriter(_connection.getOutputStream(), "UTF-8");
+			_writer = new OutputStreamWriter(_connection.getOutputStream(), StandardCharsets.UTF_8);
 			_statements = 0;
 
 			//SPARUL Requests	
@@ -217,7 +218,7 @@ public class SinkSparul implements Sink {
 			{
 				if (nodes[i].toN3().startsWith("_:"))					
 				{					
-					out.append(CrawlerConstants.PREPEND + nodes[i].toN3() + CrawlerConstants.APPEND);
+					out.append(CrawlerConstants.PREPEND).append(nodes[i].toN3()).append(CrawlerConstants.APPEND);
 				}				
 				else
 				{

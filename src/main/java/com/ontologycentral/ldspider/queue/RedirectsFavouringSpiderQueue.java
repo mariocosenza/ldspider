@@ -19,7 +19,7 @@ public abstract class RedirectsFavouringSpiderQueue extends SpiderQueue {
 
 	public RedirectsFavouringSpiderQueue(TldManager tldm, Redirects redirs, Seen seen) {
 		super(tldm, redirs, seen);
-		_redirectsQueue = new ConcurrentLinkedQueue<URI>();
+		_redirectsQueue = new ConcurrentLinkedQueue<>();
 	}
 
 	@Override

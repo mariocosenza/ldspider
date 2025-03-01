@@ -12,7 +12,7 @@ import com.ontologycentral.ldspider.hooks.error.ErrorHandler;
  *
  */
 public interface LinkFilter extends Callback {
-	public void setErrorHandler(ErrorHandler e);
-	public void setFollowABox(boolean follow);
-	public void setFollowTBox(boolean follow);
+	 void setErrorHandler(ErrorHandler e);
+	 void setFollowABox(boolean follow);
+	 void setFollowTBox(boolean follow);
 }

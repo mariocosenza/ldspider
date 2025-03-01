@@ -11,7 +11,7 @@ public class HashSetSeen implements Seen {
 	Set<URI> _set;
 
 	public HashSetSeen() {
-		_set = Collections.synchronizedSet(new HashSet<URI>());
+		_set = Collections.synchronizedSet(new HashSet<>());
 	}
 
 	public boolean hasBeenSeen(URI u) {

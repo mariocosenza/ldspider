@@ -84,7 +84,7 @@ public class LookupThread extends Thread {
 			}
 				
 			
-			setName("LT-"+_no+":"+lu.toString());
+			setName("LT-"+_no+":"+ lu);
 			
 			_q.addSeen(lu);
 			
@@ -94,8 +94,8 @@ public class LookupThread extends Thread {
 //				URI lu = _q.obtainRedirect(u);
 
 			long time1 = System.currentTimeMillis();
-			long time2 = time1;
-			long time3 = time1;
+			long time2;
+			long time3;
 			long bytes = -1;
 			int status = 0;
 			String type = null;
@@ -138,7 +138,7 @@ public class LookupThread extends Thread {
 							if (_ff.fetchOk(lu, status, hen) && _contentHandler.canHandle(type)) {
 								InputStream is = hen.getContent();
 								Callback contentCb = _content.newDataset(new Provenance(lu, hres.getAllHeaders(), status));
-								Callbacks cbs = new Callbacks(new Callback[] { contentCb, _links, _stmtCountingCallback.reset() } );
+								Callbacks cbs = new Callbacks(contentCb, _links, _stmtCountingCallback.reset());
 								_contentHandler.handle(lu, type, is, cbs);
 								is.close();
 								

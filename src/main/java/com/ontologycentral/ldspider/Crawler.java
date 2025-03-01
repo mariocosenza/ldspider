@@ -70,9 +70,9 @@ public class Crawler {
 		/** Crawl ABox and TBox statements and do an extra round to get the TBox of the statements retrieved in the final round */
 		ABOX_AND_TBOX_EXTRAROUND(true, true, true);
 		
-		private boolean aBox;
-		private boolean tBox;
-		private boolean extraRound;
+		private final boolean aBox;
+		private final boolean tBox;
+		private final boolean extraRound;
 	
 	    private Mode(boolean aBox, boolean tBox, boolean extraRound) {
 	    	this.aBox = aBox;
@@ -260,10 +260,9 @@ public class Crawler {
 	
 		int rounds = crawlingMode.doExtraRound() ? depth + 1 : depth;
 		for (int curRound = 0; (curRound <= rounds)
-				&& (CrawlerConstants.URI_LIMIT_ENABLED ? (LookupThread
-				.getOverall200FetchesWithNonEmptyRDF() < CrawlerConstants.URI_LIMIT_WITH_NON_EMPTY_RDF)
-				: true); curRound++) {
-			List<Thread> ts = new ArrayList<Thread>();
+				&& (!CrawlerConstants.URI_LIMIT_ENABLED || (LookupThread
+                .getOverall200FetchesWithNonEmptyRDF() < CrawlerConstants.URI_LIMIT_WITH_NON_EMPTY_RDF)); curRound++) {
+			List<Thread> ts = new ArrayList<>();
 	
 			//Extra round to get TBox
 			if(curRound == depth) {
@@ -366,7 +365,7 @@ public class Crawler {
 		while (uris < maxuris && _queue.size() > 0) {
 			int size = _queue.size();
 			
-			List<Thread> ts = new ArrayList<Thread>();
+			List<Thread> ts = new ArrayList<>();
 
 			for (int j = 0; j < _threads; j++) {
 				LookupThread lt = new LookupThread(_cm, _queue, _contentHandler, _output, _links, _robots, _eh, _ff, _blacklist, j);
@@ -407,7 +406,7 @@ public class Crawler {
 	}
 	
 	public void evaluateSequential(Frontier frontier, Seen seen) {
-		Redirects r = null;
+		Redirects r;
 		try {
 			r = _redirsClass.newInstance();
 		} catch (InstantiationException e) {
@@ -430,7 +429,7 @@ public class Crawler {
 		int i = 0;
 		
 		while (_queue.size() > 0 && i <= CrawlerConstants.MAX_REDIRECTS) {
-			List<Thread> ts = new ArrayList<Thread>();
+			List<Thread> ts = new ArrayList<>();
 
 			for (int j = 0; j < _threads; j++) {
 				LookupThread lt = new LookupThread(_cm, _queue, _contentHandler, _output, _links, _robots, _eh, _ff, _blacklist, j);
@@ -468,7 +467,7 @@ public class Crawler {
 	}
 	
 	public void run(SpiderQueue queue){
-		List<Thread> ts = new ArrayList<Thread>();
+		List<Thread> ts = new ArrayList<>();
 
 		for (int j = 0; j < _threads; j++) {
 			LookupThread lt = new LookupThread(_cm, queue, _contentHandler, _output, _links, _robots, _eh, _ff, _blacklist, j);

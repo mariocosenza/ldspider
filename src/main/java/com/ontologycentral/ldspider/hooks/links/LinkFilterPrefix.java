@@ -20,7 +20,7 @@ public class LinkFilterPrefix extends LinkFilterDefault {
 	
 	public LinkFilterPrefix(Frontier f) {
 		super(f);
-		_prefixes = new HashSet<String>();
+		_prefixes = new HashSet<>();
 	}
 
 	public void addPrefix(String prefix) {

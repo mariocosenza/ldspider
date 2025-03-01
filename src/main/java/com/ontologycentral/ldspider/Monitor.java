@@ -23,7 +23,7 @@ public class Monitor extends Thread {
 	}
 
 	public void run() {
-		while (_stop != true) {
+		while (!_stop) {
 			for (Thread t : _threads) {
 				_pw.println(t.getName());
 			}
@@ -31,7 +31,7 @@ public class Monitor extends Thread {
 			try {
 				Thread.sleep(_sleeptime);
 			} catch (InterruptedException e) {
-				if (_stop == false) {
+				if (!_stop) {
 					e.printStackTrace();
 				}
 			}

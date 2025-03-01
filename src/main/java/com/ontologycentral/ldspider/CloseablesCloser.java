@@ -17,7 +17,7 @@ import java.util.logging.Logger;
 public class CloseablesCloser extends Thread implements Set<Closeable> {
 	Logger _log = Logger.getLogger(this.getClass().getName());
 
-	private Set<Closeable> _streams = new HashSet<Closeable>();
+	private final Set<Closeable> _streams = new HashSet<Closeable>();
 
 	public void run() {
 		_log.info("Closing down some closeables...");

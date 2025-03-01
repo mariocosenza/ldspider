@@ -6,7 +6,6 @@ import java.util.Set;
 import org.apache.http.Header;
 import org.apache.http.message.BasicHeader;
 
-import com.ontologycentral.ldspider.hooks.content.ContentHandlerRdfXml;
 import com.ontologycentral.ldspider.hooks.sink.TakingHopsIntoAccount;
 import com.ontologycentral.ldspider.queue.DiskBreadthFirstQueue.CountLifeTime;
 
@@ -92,7 +91,7 @@ public class CrawlerConstants {
 
 	public static boolean SPLIT_HOPWISE = false;
 	
-	public static final Set<TakingHopsIntoAccount> THOSE_WHO_TAKE_HOPS_INTO_ACCOUNT = new HashSet<TakingHopsIntoAccount>();
+	public static final Set<TakingHopsIntoAccount> THOSE_WHO_TAKE_HOPS_INTO_ACCOUNT = new HashSet<>();
 	
 	/**
 	 * Register your Closeables here for closing them if the JVM gets shut down

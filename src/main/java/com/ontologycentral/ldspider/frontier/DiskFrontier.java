@@ -9,6 +9,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -26,14 +27,14 @@ public class DiskFrontier extends Frontier {
 		_f = f;
 		
 		try {
-			open(false);
+			open();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 	
-	void open(boolean append) throws IOException {
-		_ps = new PrintWriter(new FileOutputStream(_f, append));
+	void open() throws IOException {
+		_ps = new PrintWriter(new FileOutputStream(_f, false));
 	}
 	
 	public void close() {
@@ -46,7 +47,7 @@ public class DiskFrontier extends Frontier {
 		_log.fine("processed " + u);
 		if (u != null) {
 			synchronized(this) {
-				_ps.println(u.toString());
+				_ps.println(u);
 				_ps.flush();
 			}
 		}
@@ -69,7 +70,7 @@ public class DiskFrontier extends Frontier {
 	public void reset() {
 		_f.delete();
 		try {
-			open(false);
+			open();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -86,18 +87,16 @@ class DiskFrontierIterator implements Iterator<URI> {
 	Set<URI> _unique;
 	
 	public DiskFrontierIterator(File f) {
-		_unique = new HashSet<URI>();
+		_unique = new HashSet<>();
 		
 		try {
-			_br = new BufferedReader(new InputStreamReader(new FileInputStream(f)));
+			_br = new BufferedReader(new InputStreamReader(Files.newInputStream(f.toPath())));
 
 			readNext();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (URISyntaxException e) {
+		} catch (IOException | URISyntaxException e) {
 			e.printStackTrace();
 		}
-	}
+    }
 	
 	public boolean hasNext() {
 		if (_next == null) {
@@ -115,13 +114,11 @@ class DiskFrontierIterator implements Iterator<URI> {
 		
 		try {
 			readNext();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (URISyntaxException e) {
+		} catch (IOException | URISyntaxException e) {
 			e.printStackTrace();
 		}
-		
-		return next;
+
+        return next;
 	}
 
 	public void remove() {
@@ -134,7 +131,7 @@ class DiskFrontierIterator implements Iterator<URI> {
 		
 		while ((line = _br.readLine()) != null) {
 			URI u = new URI(line);
-			if (u != null && !_unique.contains(u)) {
+			if (!_unique.contains(u)) {
 				next = u;
 				_unique.add(u);
 				break;

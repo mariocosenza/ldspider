@@ -21,7 +21,7 @@ public abstract class SpiderQueue implements Serializable{
 	
 	protected Seen _seen;
 	
-	LRUMapCache<URI, Integer> _redirsCache = new LRUMapCache<URI, Integer>(2 * CrawlerConstants.NB_THREADS);
+	LRUMapCache<URI, Integer> _redirsCache = new LRUMapCache<>(2 * CrawlerConstants.NB_THREADS);
 
 	protected TldManager _tldm;
 	protected Redirects _redirs;
@@ -61,17 +61,17 @@ public abstract class SpiderQueue implements Serializable{
 		Integer i = null;
 		if ((i = _redirsCache.get(from)) != null) {
 			_redirsCache.remove(from);
-			_redirsCache.put(to, i = Integer.valueOf(i.intValue() + 1));
+			_redirsCache.put(to, i = i + 1);
 		} else {
-			_redirsCache.put(to, i = Integer.valueOf(0));
+			_redirsCache.put(to, i = 0);
 		}
 		
-		if (i.intValue() >= CrawlerConstants.MAX_REDIRECTS) {
+		if (i >= CrawlerConstants.MAX_REDIRECTS) {
 			_log.info("Too many redirects on path to: " + to + " ; previous on path: " + from + " .");
 			return;
 		}
 		
-		if (checkSeen(to) == false) {
+		if (!checkSeen(to)) {
 			_log.info("adding " + to + " directly to queue");
 			addRedirect(to);
 		}

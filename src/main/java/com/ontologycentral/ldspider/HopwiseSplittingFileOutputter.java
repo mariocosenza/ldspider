@@ -7,6 +7,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.nio.file.Files;
 import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 
@@ -36,7 +37,7 @@ public class HopwiseSplittingFileOutputter implements Appendable,
 	Closeable _clo;
 	Appendable _app;
 
-	State _state = State.NOT_ACCEPTING;
+	State _state;
 
 	/**
 	 * Whether hop n's data should also be in the file for hop n + 1.
@@ -120,11 +121,11 @@ public class HopwiseSplittingFileOutputter implements Appendable,
 				InputStream is;
 
 				if (_basefileextension.equals("gz"))
-					is = new GZIPInputStream(new FileInputStream(file));
+					is = new GZIPInputStream(Files.newInputStream(file.toPath()));
 				else
 					is = new BufferedInputStream(new FileInputStream(file));
 
-				int data = -1;
+				int data;
 				while ((data = is.read()) > -1)
 					ps.write(data);
 

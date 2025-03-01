@@ -5,7 +5,7 @@ import java.net.URI;
 
 public interface Redirects extends Serializable{
 
-	public void put(URI from, URI to);
+	void put(URI from, URI to);
 	
-	public URI getRedirect(URI from);
+	URI getRedirect(URI from);
 }

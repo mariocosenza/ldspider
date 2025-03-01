@@ -24,7 +24,7 @@ public class FilterSinkPredicate implements Sink {
 
 	public FilterSinkPredicate(Sink sink, Set<Node> predicates) {
 		_sink = sink;
-		_predicates = new HashSet<Node>(predicates);
+		_predicates = new HashSet<>(predicates);
 	}
 
 	public Callback newDataset(Provenance provenance) {

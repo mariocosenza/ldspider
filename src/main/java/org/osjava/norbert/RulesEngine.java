@@ -32,7 +32,6 @@
 package org.osjava.norbert;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -42,10 +41,10 @@ import java.util.List;
  // TODO: Make this package private?
 class RulesEngine {
 
-    private List<Rule> rules;
+    private final List<Rule> rules;
 
     public RulesEngine() {
-        this.rules = new ArrayList<Rule>();
+        this.rules = new ArrayList<>();
     }
 
     public void allowPath(String path) {
@@ -68,11 +67,9 @@ class RulesEngine {
      */
     public Boolean isAllowed(String path) {
 
-        Iterator<Rule> iterator = this.rules.iterator();
-        while(iterator.hasNext()) {
-            Rule rule = (Rule)iterator.next();
+        for (Rule rule : this.rules) {
             Boolean test = rule.isAllowed(path);
-            if(test != null) {
+            if (test != null) {
                 return test;
             }
         }

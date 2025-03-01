@@ -5,7 +5,6 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
@@ -89,10 +88,10 @@ public class BreadthFirstQueue extends RedirectsFavouringSpiderQueue {
 
 		_minActPlds = minActPlds;
 
-		_current = new ConcurrentLinkedQueue<String>();
+		_current = new ConcurrentLinkedQueue<>();
 
 		_queues = Collections
-				.synchronizedMap(new HashMap<String, Queue<URI>>());
+				.synchronizedMap(new HashMap<>());
 
 		_minReached = false;
 
@@ -119,14 +118,12 @@ public class BreadthFirstQueue extends RedirectsFavouringSpiderQueue {
 
 		_queues.clear();
 
-		Iterator<URI> it = f.iterator();
-		while (it.hasNext()) {
-			URI u = it.next();
-			if (!checkSeen(u)) {
-				add(u, true);
-			}
+        for (URI u : f) {
+            if (!checkSeen(u)) {
+                add(u, true);
+            }
 //			it.remove();
-		}
+        }
 
 		if (_minActPlds < 0)
 			for (String pld : _queues.keySet()) {
@@ -142,7 +139,7 @@ public class BreadthFirstQueue extends RedirectsFavouringSpiderQueue {
 
 				if (q.size() > maxuris) {
 					int n = 0;
-					ConcurrentLinkedQueue<URI> nq = new ConcurrentLinkedQueue<URI>();
+					ConcurrentLinkedQueue<URI> nq = new ConcurrentLinkedQueue<>();
 					for (URI u : q) {
 						nq.add(u);
 						n++;
@@ -216,7 +213,7 @@ public class BreadthFirstQueue extends RedirectsFavouringSpiderQueue {
 		
 		int empty = 0;
 
-		long time1 = 0l;
+		long time1;
 
 		do {	
 			time1 = System.currentTimeMillis();
@@ -283,7 +280,7 @@ public class BreadthFirstQueue extends RedirectsFavouringSpiderQueue {
 	}
 	
 	List<String> getQueuePlds(boolean sorted) {
-		List<String> li = new ArrayList<String>();
+		List<String> li = new ArrayList<>();
 
 		for (String pld : _queues.keySet()) {
 			if (!_queues.get(pld).isEmpty()) {
@@ -291,7 +288,7 @@ public class BreadthFirstQueue extends RedirectsFavouringSpiderQueue {
 			}
 		}
 		if (sorted)
-			Collections.sort(li, new PldCountComparator(_queues));
+			li.sort(new PldCountComparator(_queues));
 
 		return li;
 	}
@@ -307,13 +304,9 @@ public class BreadthFirstQueue extends RedirectsFavouringSpiderQueue {
 
 		String pld = _tldm.getPLD(u);
 		if (pld != null) {
-			Queue<URI> q = _queues.get(pld);
-			if (q == null) {
-				q = new ConcurrentLinkedQueue<URI>();
-				_queues.put(pld, q);
-				// _current.add(pld);
-			}
-			q.add(u);
+            Queue<URI> q = _queues.computeIfAbsent(pld, k -> new ConcurrentLinkedQueue<>());
+            // _current.add(pld);
+            q.add(u);
 		}
 	}
 

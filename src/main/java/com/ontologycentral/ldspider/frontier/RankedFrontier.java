@@ -18,12 +18,12 @@ public class RankedFrontier extends Frontier {
 	Map<String, Integer> _data;
 	Set<URI> _unscheduledUris;
 
-	Object lock = new Object();
+	final Object lock = new Object();
 	
 	public RankedFrontier() {
 		super();
-		_data = Collections.synchronizedMap(new HashMap<String, Integer>());
-		_unscheduledUris = Collections.synchronizedSet(new HashSet<URI>());
+		_data = Collections.synchronizedMap(new HashMap<>());
+		_unscheduledUris = Collections.synchronizedSet(new HashSet<>());
 	}
 
 	public void add(URI u) {
@@ -51,14 +51,13 @@ public class RankedFrontier extends Frontier {
 	}
 
 	public Iterator<URI> iterator() {
-		final List<URI> li = new ArrayList<URI>();
 
-		li.addAll(_unscheduledUris);
+        final List<URI> li = new ArrayList<>(_unscheduledUris);
 
-		Collections.sort(li, new DescendingCountComparatorAlph<URI>(_data));
+		li.sort(new DescendingCountComparatorAlph<>(_data));
 		
 		return new Iterator<URI>() {
-			Iterator<URI> it = li.iterator();
+			final Iterator<URI> it = li.iterator();
 			URI currentUri;
 
 			public boolean hasNext() {

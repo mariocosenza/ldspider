@@ -2,7 +2,6 @@ package com.ontologycentral.ldspider.hooks.error;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
@@ -11,7 +10,6 @@ import org.apache.http.Header;
 import org.semanticweb.yars.nx.Node;
 import org.semanticweb.yars.nx.Resource;
 import org.semanticweb.yars.nx.parser.Callback;
-import org.semanticweb.yars.nx.parser.NxParser;
 import org.semanticweb.yars.nx.util.NxUtil;
 
 import com.ontologycentral.ldspider.frontier.Frontier;
@@ -66,14 +64,11 @@ public class ErrorHandlerRounds extends ErrorHandlerLogger {
 				_out.append(to.toN3());
 				_out.append(" .\n");
 			}
-		} catch (URISyntaxException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
+		} catch (URISyntaxException | IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-	}
+    }
 
 	public void handleNextRound() {
 		try {

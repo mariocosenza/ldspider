@@ -45,7 +45,7 @@ public abstract class Frontier implements Iterable<URI> {
 	
 	public static URI normalise(URI u) throws URISyntaxException {
 		String path = u.getPath();
-		if (path == null || path.length() == 0) {
+		if (path == null || path.isEmpty()) {
 			path = "/";
 //		} else if (path.endsWith("/index.html")) {
 //			path = path.substring(0, path.length()-10);
@@ -71,8 +71,7 @@ public abstract class Frontier implements Iterable<URI> {
 		for (URI u : c) {
 			add(u);
 		}
-		c = null;
-	}
+    }
 
 //	public abstract void remove(URI u);
 	public abstract void removeAll(Collection<URI> c);

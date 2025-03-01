@@ -17,7 +17,7 @@ import com.ontologycentral.ldspider.hooks.error.ErrorHandler;
 public class LinkFilterDummy implements LinkFilter {
 
 	public Set<URI> getLinks() {
-		return new HashSet<URI>();
+		return new HashSet<>();
 	}
 	
 	public void setFollowABox(boolean follow) {

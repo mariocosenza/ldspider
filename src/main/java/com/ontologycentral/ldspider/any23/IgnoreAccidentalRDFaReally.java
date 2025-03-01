@@ -59,49 +59,49 @@ public class IgnoreAccidentalRDFaReally implements TripleHandler {
 	 * "brainstorming", "rejected", "non-HTML rel values". Plus "shortcut", see
 	 * http://de.wikipedia.org/wiki/Favicon .
 	 */
-	private static final Set<String> nonRDFrelValues = new HashSet<String>(
-			Arrays.asList(new String[] { "acquaintance", "alternate",
-					"appendix", "bookmark", "chapter", "child", "colleague",
-					"contact", "contents", "copyright", "co-resident",
-					"co-worker", "crush", "date", "friend", "glossary", "help",
-					"its-rules", "kin", "license", "me", "met", "muse",
-					"neighbor", "next", "nofollow", "parent", "prev",
-					"previous", "section", "sibling", "spouse", "start",
-					"stylesheet", "subsection", "sweetheart", "tag", "toc",
-					"transformation", "apple-touch-icon",
-					"apple-touch-icon-precomposed",
-					"apple-touch-startup-image", "attachment", "canonical",
-					"category", "component", "chrome-webstore-item",
-					"disclosure", "discussion", "dns-prefetch", "EditURI",
-					"entry-content", "external", "home", "hub", "in-reply-to",
-					"index", "indieauth", "issues", "lightbox", "meta",
-					"openid.delegate", "openid.server", "openid2.local_id",
-					"openid2.provider", "p3pv1", "pgpkey", "pingback",
-					"prerender", "profile", "rendition", "service",
-					"shortlink", "sidebar", "sitemap", "subresource",
-					"syndication", "timesheet", "webmention", "widget",
-					"wlwmanifest", "image_src",
-					"http://docs.oasis-open.org/ns/cmis/link/200908/acl",
-					"stylesheet/less", "archive", "archives", "author",
-					"canonical", "comment", "contribution", "EditURI",
-					"endorsed", "fan", "feed", "footnote", "icon",
-					"kinetic-stylesheet", "lightbox", /*
+	private static final Set<String> nonRDFrelValues = new HashSet<>(
+            Arrays.asList("acquaintance", "alternate",
+                    "appendix", "bookmark", "chapter", "child", "colleague",
+                    "contact", "contents", "copyright", "co-resident",
+                    "co-worker", "crush", "date", "friend", "glossary", "help",
+                    "its-rules", "kin", "license", "me", "met", "muse",
+                    "neighbor", "next", "nofollow", "parent", "prev",
+                    "previous", "section", "sibling", "spouse", "start",
+                    "stylesheet", "subsection", "sweetheart", "tag", "toc",
+                    "transformation", "apple-touch-icon",
+                    "apple-touch-icon-precomposed",
+                    "apple-touch-startup-image", "attachment", "canonical",
+                    "category", "component", "chrome-webstore-item",
+                    "disclosure", "discussion", "dns-prefetch", "EditURI",
+                    "entry-content", "external", "home", "hub", "in-reply-to",
+                    "index", "indieauth", "issues", "lightbox", "meta",
+                    "openid.delegate", "openid.server", "openid2.local_id",
+                    "openid2.provider", "p3pv1", "pgpkey", "pingback",
+                    "prerender", "profile", "rendition", "service",
+                    "shortlink", "sidebar", "sitemap", "subresource",
+                    "syndication", "timesheet", "webmention", "widget",
+                    "wlwmanifest", "image_src",
+                    "http://docs.oasis-open.org/ns/cmis/link/200908/acl",
+                    "stylesheet/less", "archive", "archives", "author",
+                    "canonical", "comment", "contribution", "EditURI",
+                    "endorsed", "fan", "feed", "footnote", "icon",
+                    "kinetic-stylesheet", "lightbox", /*
 													 * "lightbox[group_name]",
 													 * // is treated otherwise
 													 */
-					"prettyPhoto", "clearbox", "made", "meta", "microsummary",
-					"noreferrer", "openid.delegate", "openid.server",
-					"permalink", "pgpkey", "pingback", "popover", "prefetch",
-					"publickey", "publisher", "referral", "related", "replies",
-					"resource", "search", "sitemap", "sponsor", "tooltip",
-					"trackback", "unendorsed", "user", "wlwmanifest", "banner",
-					"begin", "biblioentry", "bibliography", "child",
-					"citation", "collection", "definition", "disclaimer",
-					"editor", "end", "footnote", "navigate", "origin",
-					"parent", "pointer", "publisher", "sibling", "top",
-					"trademark", "translation", "urc", "first", "index",
-					"last", "up", "pronunciation", "directory", "enclosure",
-					"home", "payment", "shortcut" }));
+                    "prettyPhoto", "clearbox", "made", "meta", "microsummary",
+                    "noreferrer", "openid.delegate", "openid.server",
+                    "permalink", "pgpkey", "pingback", "popover", "prefetch",
+                    "publickey", "publisher", "referral", "related", "replies",
+                    "resource", "search", "sitemap", "sponsor", "tooltip",
+                    "trackback", "unendorsed", "user", "wlwmanifest", "banner",
+                    "begin", "biblioentry", "bibliography", "child",
+                    "citation", "collection", "definition", "disclaimer",
+                    "editor", "end", "footnote", "navigate", "origin",
+                    "parent", "pointer", "publisher", "sibling", "top",
+                    "trademark", "translation", "urc", "first", "index",
+                    "last", "up", "pronunciation", "directory", "enclosure",
+                    "home", "payment", "shortcut"));
 
 	private final ExtractionContextBlocker blocker;
 
@@ -209,10 +209,9 @@ public class IgnoreAccidentalRDFaReally implements TripleHandler {
 			return false;
 		else if (uString.length() >= docString.length()) {
 			String uURIbeyondDocumentURI = uString.substring(
-					docString.length(), uString.length());
-			if ((nonRDFrelValues.contains(uURIbeyondDocumentURI) || uURIbeyondDocumentURI
-					.startsWith("lightbox[")))
-				return true;
+					docString.length());
+            return nonRDFrelValues.contains(uURIbeyondDocumentURI) || uURIbeyondDocumentURI
+                    .startsWith("lightbox[");
 		}
 		return false;
 	}

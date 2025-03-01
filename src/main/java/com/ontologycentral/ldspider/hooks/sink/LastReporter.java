@@ -9,5 +9,5 @@ public interface LastReporter {
 	 * @return The culprit, or null if the last statement didn't end in a
 	 *         {@link org.semanticweb.yars.nx.Resource Resource}.
 	 */
-	public Resource whoWasLast();
+    Resource whoWasLast();
 }

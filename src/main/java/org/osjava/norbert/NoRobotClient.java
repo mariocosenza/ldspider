@@ -34,23 +34,18 @@ package org.osjava.norbert;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.InputStream;
 import java.net.URL;
 import java.net.URLDecoder;
-import java.net.MalformedURLException;
-import java.net.HttpURLConnection;
-import java.net.URLConnection;
 
 /**
  * A Client which may be used to decide which urls on a website 
  * may be looked at, according to the norobots specification 
  * located at: 
- * http://www.robotstxt.org/wc/norobots-rfc.html
+ * <a href="http://www.robotstxt.org/wc/norobots-rfc.html">...</a>
  */
 public class NoRobotClient {
 
-    private String userAgent;
+    private final String userAgent;
     private RulesEngine rules;
     private RulesEngine wildcardRules;
     private URL baseUrl;
@@ -121,8 +116,8 @@ public class NoRobotClient {
 
         // take each line, one at a time
         BufferedReader rdr = new BufferedReader( new StringReader(txt) );
-        String line = "";
-        String value = null;
+        String line;
+        String value;
         boolean parsingAllowBlock = false;
         try {
             while( (line = rdr.readLine()) != null ) {
@@ -153,7 +148,6 @@ public class NoRobotClient {
                     value = line.toLowerCase().substring("user-agent:".length()).trim();
                     if(value.equalsIgnoreCase(userAgent)) {
                         parsingAllowBlock = true;
-                        continue;
                     }
                 } else {
                     // if not, then store if we're currently the user agent
@@ -169,11 +163,9 @@ public class NoRobotClient {
                             engine.disallowPath( value );
                         } else {
                             // ignore
-                            continue;
                         }
                     } else {
                         // ignore
-                        continue;
                     }
                 }
             }
@@ -188,7 +180,7 @@ public class NoRobotClient {
     /**
      * Decide if the parsed website will allow this URL to be 
      * be seen. 
-     *
+     * <p>
      * Note that parse(URL) must be called before this method 
      * is called. 
      *
@@ -222,7 +214,7 @@ public class NoRobotClient {
             allowed = Boolean.TRUE;
         }
 
-        return allowed.booleanValue();
+        return allowed;
     }
 
 //    // INLINE: as such from genjava/gj-core's net package. Simple method 

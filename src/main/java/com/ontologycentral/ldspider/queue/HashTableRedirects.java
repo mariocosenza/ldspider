@@ -17,7 +17,7 @@ public class HashTableRedirects implements Redirects {
 	Map<URI, URI> _map;
 	
 	public HashTableRedirects() {
-		_map = Collections.synchronizedMap(new Hashtable<URI, URI>());
+		_map = Collections.synchronizedMap(new Hashtable<>());
 	}
 
 	public void put(URI from, URI to) {

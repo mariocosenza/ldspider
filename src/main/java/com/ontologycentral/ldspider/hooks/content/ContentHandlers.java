@@ -5,8 +5,6 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
 
 import org.semanticweb.yars.nx.parser.Callback;
 
@@ -45,10 +43,10 @@ public class ContentHandlers implements ContentHandler {
 	}
 
 	public String[] getMimeTypes() {
-		Collection<String> mimeTypes = new ArrayList<String>();
+		Collection<String> mimeTypes = new ArrayList<>();
 		for (ContentHandler ch : _handlers)
 			mimeTypes.addAll(Arrays.asList(ch.getMimeTypes()));
-		return mimeTypes.toArray(new String[mimeTypes.size()]);
+		return mimeTypes.toArray(new String[0]);
 	}
 
 }

@@ -2,11 +2,11 @@ package com.ontologycentral.ldspider.hooks.content;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URLEncoder;
+import java.nio.file.Files;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -32,13 +32,17 @@ public class ZipContentHandler implements ContentHandler {
 		_dir = dir;
 		
 		if (!_dir.exists()) {
-			if (_dir.mkdir() == false) {
-				_log.severe("cannot create directory " + _dir.toString());
+			if (!_dir.mkdir()) {
+				_log.severe("cannot create directory " + _dir);
 			}
 		}
-		
-		_zip = new ZipOutputStream(new FileOutputStream(new File(_dir, "archive" + _i / MAX_FILES + ".zip")));
-		_i++;
+
+        try {
+            _zip = new ZipOutputStream(Files.newOutputStream(new File(_dir, "archive" + _i / MAX_FILES + ".zip").toPath()));
+        } catch (IOException e) {
+            throw new FileNotFoundException(e.getMessage());
+        }
+        _i++;
 	}
 	
 	public boolean canHandle(String mime) {
@@ -53,7 +57,7 @@ public class ZipContentHandler implements ContentHandler {
 		try {
 			if (_i > 0 && _i % MAX_FILES == 0) {
 				_zip.close();
-				_zip = new ZipOutputStream(new FileOutputStream(new File(_dir, "archive" + _i / MAX_FILES + ".zip")));
+				_zip = new ZipOutputStream(Files.newOutputStream(new File(_dir, "archive" + _i / MAX_FILES + ".zip").toPath()));
 			}
 			_i++;
 			

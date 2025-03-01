@@ -1,14 +1,11 @@
 package com.ontologycentral.ldspider.hooks.content;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.semanticweb.yars.nx.parser.Callback;
 import org.semanticweb.yars.nx.parser.NxParser;
-import org.semanticweb.yars.nx.parser.ParseException;
 
 /**
  * Handles N-TRIPLES and N-QUADS documents.

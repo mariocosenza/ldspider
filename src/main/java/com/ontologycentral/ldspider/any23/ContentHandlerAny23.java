@@ -1,14 +1,11 @@
 package com.ontologycentral.ldspider.any23;
 
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -57,20 +54,19 @@ public class ContentHandlerAny23 implements ContentHandler {
 	private final Collection<MIMEType> mimeTypes;
 
 	public static String[] getDefaultExtractorNames() {
-		String[] extractorNames = {
-				RDFa11ExtractorFactory.getDescriptionInstance()
-						.getExtractorName(),
-				RDFXMLExtractorFactory.getDescriptionInstance()
-						.getExtractorName(),
-				TurtleExtractorFactory.getDescriptionInstance()
-						.getExtractorName(),
-				NTriplesExtractorFactory.getDescriptionInstance()
-						.getExtractorName(),
-				NQuadsExtractorFactory.getDescriptionInstance()
-						.getExtractorName(),
-				TurtleHTMLExtractorFactory.getDescriptionInstance()
-						.getExtractorName() };
-		return extractorNames;
+        return new String[]{
+                RDFa11ExtractorFactory.getDescriptionInstance()
+                        .getExtractorName(),
+                RDFXMLExtractorFactory.getDescriptionInstance()
+                        .getExtractorName(),
+                TurtleExtractorFactory.getDescriptionInstance()
+                        .getExtractorName(),
+                NTriplesExtractorFactory.getDescriptionInstance()
+                        .getExtractorName(),
+                NQuadsExtractorFactory.getDescriptionInstance()
+                        .getExtractorName(),
+                TurtleHTMLExtractorFactory.getDescriptionInstance()
+                        .getExtractorName() };
 	}
 
 	public ContentHandlerAny23() {
@@ -90,7 +86,7 @@ public class ContentHandlerAny23 implements ContentHandler {
 
 		extractorGroup = ExtractorRegistryImpl.getInstance().getExtractorGroup(
 				Arrays.asList(extractorNames));
-		mimeTypes = new LinkedList<MIMEType>();
+		mimeTypes = new LinkedList<>();
 		for (ExtractorFactory<?> ef : extractorGroup)
 			mimeTypes.addAll(ef.getSupportedMIMETypes());
 		mimetypesStrings = determineMimeTypes(extractorNames);
@@ -102,7 +98,7 @@ public class ContentHandlerAny23 implements ContentHandler {
 	 * @return mime types
 	 */
 	private String[] determineMimeTypes(String[] extractorNames) {
-		Map<String,Double> mimeAndQ = new HashMap<String,Double>();
+		Map<String,Double> mimeAndQ = new HashMap<>();
 		Collection<MIMEType> mimetypes;
 		Double d;
 		for (ExtractorFactory<?> ef : extractorGroup) {
@@ -116,34 +112,30 @@ public class ContentHandlerAny23 implements ContentHandler {
 		}
 
 		// convert to list for sorting
-		List<Entry<String, Double>> mimeAndQualityList = new ArrayList<Entry<String, Double>>(
-				mimeAndQ.size());
+		List<Entry<String, Double>> mimeAndQualityList = new ArrayList<>(
+                mimeAndQ.size());
 		mimeAndQualityList.addAll(mimeAndQ.entrySet());
 
 		// sort
-		Collections.sort(mimeAndQualityList,
-				new Comparator<Entry<String, Double>>() {
-					public int compare(Entry<String, Double> arg0,
-							Entry<String, Double> arg1) {
-						int val = -arg0.getValue().compareTo(arg1.getValue());
-						if (val != 0)
-							return val;
-						else
-							return arg0.getKey().compareTo(arg1.getKey());
-					}
-				});
+		mimeAndQualityList.sort((arg0, arg1) -> {
+            int val = -arg0.getValue().compareTo(arg1.getValue());
+            if (val != 0)
+                return val;
+            else
+                return arg0.getKey().compareTo(arg1.getKey());
+        });
 
 		// prepare for conversion to String[]
-		ArrayList<String> mimeAndQualityStringList = new ArrayList<String>();
+		ArrayList<String> mimeAndQualityStringList = new ArrayList<>();
 		for (Entry<String, Double> entry : mimeAndQualityList)
-			if (entry.getValue().doubleValue() == 1.0)
+			if (entry.getValue() == 1.0)
 				mimeAndQualityStringList.add(entry.getKey());
 			else
 				mimeAndQualityStringList.add(entry.getKey() + ";q="
 						+ entry.getValue());
 		
 		return mimeAndQualityStringList
-				.toArray(new String[mimeAndQualityStringList.size()]);
+				.toArray(new String[0]);
 	}
 
 	/**
@@ -171,15 +163,13 @@ public class ContentHandlerAny23 implements ContentHandler {
 	 * @return a string for the HTTP accept header
 	 */
 	public String composeAcceptHeader(String... moreMimeTypes) {
-		Collection<MIMEType> mimetypes = new LinkedList<MIMEType>();
-		mimetypes.addAll(mimeTypes);
+        Collection<MIMEType> mimetypes = new LinkedList<>(mimeTypes);
 		for (String s : moreMimeTypes)
 			try {
 				mimetypes.add(MIMEType.parse(s));
 			} catch (IllegalArgumentException e) {
 				_log.warning(e.getMessage());
-				continue;
-			}
+            }
 		return new AcceptHeaderBuilder(mimetypes).getAcceptHeader();
 	}
 
@@ -214,9 +204,6 @@ public class ContentHandlerAny23 implements ContentHandler {
 										new CallbackNQuadTripleHandler(callback))));
 
 			return true;
-		} catch (IOException e) {
-			_log.log(Level.WARNING, "Could not read document " + uri, e);
-			return false;
 		} catch (Exception e) {
 			_log.log(Level.WARNING, "Could not read document " + uri, e);
 			return false;

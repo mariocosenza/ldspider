@@ -12,7 +12,7 @@ public class BasicFrontier extends Frontier {
 	
 	public BasicFrontier() {
 		super();
-		_data = Collections.synchronizedSet(new HashSet<URI>());
+		_data = Collections.synchronizedSet(new HashSet<>());
 	}
 	
 	public synchronized void add(URI u) {

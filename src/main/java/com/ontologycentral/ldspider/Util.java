@@ -8,6 +8,9 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.logging.Logger;
@@ -32,7 +35,7 @@ public class Util {
 
 		if (extension != null && extension.equals("gz")) {
 			ret = new BufferedOutputStream(new GZIPOutputStream(
-					new FileOutputStream(outfilename)));
+                    Files.newOutputStream(Paths.get(outfilename))));
 		} else
 			ret = new BufferedOutputStream(new FileOutputStream(outfilename));
 
@@ -46,13 +49,13 @@ public class Util {
 		return filename
 				+ "-"
 				+ hop
-				+ ((extension != null && extension.equals("")) ? "" : "."
+				+ ((extension != null && extension.isEmpty()) ? "" : "."
 						+ extension);
 	}
 
 	public static String[] determineFnameAndExtension(String filename) {
 		int pathIdx = filename
-				.lastIndexOf(System.getProperty("file.separator"));
+				.lastIndexOf(FileSystems.getDefault().getSeparator());
 		int extIdx = filename.lastIndexOf('.');
 
 		String[] ret = new String[2];
@@ -87,10 +90,7 @@ public class Util {
 						return true;
 					else {
 						produceNext();
-						if (nextIsFresh && next != null)
-							return true;
-						else
-							return false;
+                        return nextIsFresh && next != null;
 					}
 				}
 
@@ -137,7 +137,7 @@ public class Util {
 		@Override
 		public Iterator<URI> iterator() {
 			return new Iterator<URI>() {
-				Iterator<String> stringIt = _it.iterator();
+				final Iterator<String> stringIt = _it.iterator();
 
 				URI next = null;
 				boolean nextIsFresh = false;
@@ -148,10 +148,7 @@ public class Util {
 						return true;
 					else {
 						produceNext();
-						if (nextIsFresh && next != null)
-							return true;
-						else
-							return false;
+                        return nextIsFresh && next != null;
 					}
 				}
 
@@ -165,16 +162,12 @@ public class Util {
 							try {
 								next = new URL(s).toURI();
 								nextIsFresh = true;
-							} catch (URISyntaxException e) {
-								produceNext();
-								_log.fine("Discard invalid uri "
-										+ e.getMessage() + " for " + s);
-							} catch (MalformedURLException e) {
+							} catch (URISyntaxException | MalformedURLException e) {
 								produceNext();
 								_log.fine("Discard invalid uri "
 										+ e.getMessage() + " for " + s);
 							}
-						} else {
+                        } else {
 							nextIsFresh = true;
 							next = null;
 						}

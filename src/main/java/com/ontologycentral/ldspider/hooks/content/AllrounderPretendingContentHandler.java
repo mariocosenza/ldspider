@@ -2,9 +2,6 @@ package com.ontologycentral.ldspider.hooks.content;
 
 import java.io.InputStream;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 
 import org.semanticweb.yars.nx.parser.Callback;
 

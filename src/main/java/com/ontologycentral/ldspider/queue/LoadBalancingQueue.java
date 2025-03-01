@@ -33,12 +33,12 @@ public class LoadBalancingQueue extends RedirectsFavouringSpiderQueue {
 	
 	int _depth = 0;
 	
-	static Queue<String> POISON = new ConcurrentLinkedQueue<String>();
+	static Queue<String> POISON = new ConcurrentLinkedQueue<>();
 	
 	public LoadBalancingQueue(TldManager tldm, Redirects r, Seen seen) {
 		super(tldm, r, seen);
 
-		_current = new ConcurrentLinkedQueue<String>();
+		_current = new ConcurrentLinkedQueue<>();
 		
 		_mindelay = CrawlerConstants.MIN_DELAY;
 		_maxdelay = CrawlerConstants.MAX_DELAY;
@@ -64,7 +64,7 @@ public class LoadBalancingQueue extends RedirectsFavouringSpiderQueue {
 
 //		super.schedule(f);
 
-		_queues = Collections.synchronizedMap(new HashMap<String, Queue<URI>>());
+		_queues = Collections.synchronizedMap(new HashMap<>());
 		
 		Iterator<URI> it = f.iterator();
 		
@@ -117,7 +117,7 @@ public class LoadBalancingQueue extends RedirectsFavouringSpiderQueue {
 		if (pld != null) {	
 			Queue<URI> q = _queues.get(pld);
 			if (q == null) {
-				q = new ConcurrentLinkedQueue<URI>();
+				q = new ConcurrentLinkedQueue<>();
 				_queues.put(pld, q);
 				_current.add(pld);
 			}
@@ -173,7 +173,7 @@ public class LoadBalancingQueue extends RedirectsFavouringSpiderQueue {
 
 				_maxtime = System.currentTimeMillis();
 				
-				_current = new ConcurrentLinkedQueue<String>();
+				_current = new ConcurrentLinkedQueue<>();
 				_current.addAll(getSortedQueuePlds());				
 			}
 
@@ -197,7 +197,7 @@ public class LoadBalancingQueue extends RedirectsFavouringSpiderQueue {
 	}
 	
 	List<String> getSortedQueuePlds() {
-		List<String> li = new ArrayList<String>();
+		List<String> li = new ArrayList<>();
 		
 		li.addAll(_queues.keySet());
 		

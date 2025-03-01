@@ -11,10 +11,10 @@ import com.ontologycentral.ldspider.http.Headers;
  */
 public class SinkCallback implements Sink {
 
-	private Callback _callback;
-	private Callback _headerCallback = null;
+	private final Callback _callback;
+	private final Callback _headerCallback;
 
-	private boolean _includeProvenance;
+	private final boolean _includeProvenance;
 	
 	
 	/**

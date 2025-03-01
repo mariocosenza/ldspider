@@ -20,7 +20,7 @@ public class Headers {
 	static Logger _log = Logger
 			.getLogger(Headers.class.getName());
 	
-	public static enum Treatment {
+	public enum Treatment {
 		INCLUDE, DUMP, DROP
 	}
 	
@@ -88,7 +88,7 @@ public class Headers {
 
 	public static void processHeaders(URI uri, int status, Header[] headerFields, Callback cb) {
 		if (HEADER_MAP == null) {
-			HEADER_MAP = new HashMap<String, Resource>();
+			HEADER_MAP = new HashMap<>();
 
 			for (int i = 0 ; i < HEADERFIELDS.length; i++) {
 				String h = HEADERFIELDS[i];
@@ -113,21 +113,21 @@ public class Headers {
 		cb.processStatement(new Node[] { ruri, HEADERINFO, bNode, ruri });
 		cb.processStatement(new Node[] { bNode,
 				new Resource(httpNS + "responseCode"),
-				new NumericLiteral(Integer.valueOf(status)), ruri });
+				new NumericLiteral(status), ruri });
 
-		for (int i = 0; i < headerFields.length; i++) {
-			if (HEADER_MAP.containsKey(headerFields[i].getName())) {
-				
-				Node value;
-				Resource predicate = HEADER_MAP.get(headerFields[i].getName());
-				if (predicate.equals(HEADER_MAP.get("Content-Location"))) {
-					value = new Resource(NxUtil.escapeForNx(uri.resolve(
-							headerFields[i].getValue()).toString()));
-				} else
-					value = new Literal(NxUtil.escapeForNx(headerFields[i]
-							.getValue()));
-				cb.processStatement(new Node[] { bNode, predicate, value, ruri });
-			}
-		}
+        for (Header headerField : headerFields) {
+            if (HEADER_MAP.containsKey(headerField.getName())) {
+
+                Node value;
+                Resource predicate = HEADER_MAP.get(headerField.getName());
+                if (predicate.equals(HEADER_MAP.get("Content-Location"))) {
+                    value = new Resource(NxUtil.escapeForNx(uri.resolve(
+                            headerField.getValue()).toString()));
+                } else
+                    value = new Literal(NxUtil.escapeForNx(headerField
+                            .getValue()));
+                cb.processStatement(new Node[]{bNode, predicate, value, ruri});
+            }
+        }
 	}
 }

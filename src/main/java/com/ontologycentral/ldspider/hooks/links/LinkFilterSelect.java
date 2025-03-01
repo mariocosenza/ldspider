@@ -10,8 +10,8 @@ import com.ontologycentral.ldspider.frontier.Frontier;
 public class LinkFilterSelect extends LinkFilterDefault{
 	Logger _log = Logger.getLogger(this.getClass().getName());
 
-	private List<Node> _predicates;
-	private boolean _isAllowRule;
+	private final List<Node> _predicates;
+	private final boolean _isAllowRule;
 
 	public LinkFilterSelect(Frontier f, List<Node> linkPredicates, boolean isAllowRule) {
 		super(f);
@@ -37,7 +37,7 @@ public class LinkFilterSelect extends LinkFilterDefault{
 	 */
 	public void processStatement(Node[] nx) {
 
-		if(_predicates.size()==0) {
+		if(_predicates.isEmpty()) {
 			//no predicates specified
 			super.processStatement(nx);
 			_log.info("Select link from "+nx[1]);

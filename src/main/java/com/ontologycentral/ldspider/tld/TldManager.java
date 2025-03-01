@@ -27,7 +27,7 @@ public class TldManager implements Serializable{
 	
 	String TLD_URI = "http://mxr.mozilla.org/mozilla-central/source/netwerk/dns/effective_tld_names.dat?raw=1";
 
-	private static Logger _log = Logger.getLogger(TldManager.class.getName());
+	private static final Logger _log = Logger.getLogger(TldManager.class.getName());
 
     HashMap<String, Tld> TLDs = null;	// map of tlds to their properties
 
@@ -36,7 +36,7 @@ public class TldManager implements Serializable{
     }   
     
     void read(InputStream is) throws IOException {
-    	TLDs = new HashMap<String, Tld>();
+    	TLDs = new HashMap<>();
     	
     	if (is != null) {
     		readList(is);
@@ -61,7 +61,7 @@ public class TldManager implements Serializable{
     		}
     	} else {
     		_log.info("status " + status + " for " + tu);
-    		throw new IOException("cannot access " + tu.toString() + ": " + status);
+    		throw new IOException("cannot access " + tu + ": " + status);
     	}
 
     	if (hen != null) {
@@ -85,7 +85,7 @@ public class TldManager implements Serializable{
     		if (parts.length == 2) {
     			return host;
     		}
-    		String tld = host.substring(host.lastIndexOf(".") + 1, host.length());
+    		String tld = host.substring(host.lastIndexOf(".") + 1);
     		Tld current = TLDs.get(tld);
     		if(current == null) {
     			_log.fine("no host " + url);
@@ -227,17 +227,17 @@ public class TldManager implements Serializable{
     			// if line is stating exceptional two-level domain
     			// e.g. "!bl.uk"
     			else if (line.matches("![a-z0-9-]+\\." + tld)) {
-    				current.addExcptnlTwoLvlDomain(line.substring(1, line.length()));
+    				current.addExcptnlTwoLvlDomain(line.substring(1));
     			}
     			// if line is stating that for some two-levels any three-level can be a suffix
     			// e.g. "*.sch.uk"
     			else if (line.matches("\\*\\.[a-z0-9-]+\\." + tld)) {
-    				current.addAddlWildcardThreeLvlSffx(line.substring(2, line.length()));
+    				current.addAddlWildcardThreeLvlSffx(line.substring(2));
     			}
     			// if line is stating exceptional three-level domain
     			// e.g. "!metro.tokyo.jp"
     			else if (line.matches("![a-z0-9-]+\\.[a-z0-9-]+\\." + tld)) {
-    				current.addExcptnlThreeLvlDomain(line.substring(1, line.length()));
+    				current.addExcptnlThreeLvlDomain(line.substring(1));
     			}
     		}
     	}		

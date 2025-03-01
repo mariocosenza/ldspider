@@ -2,7 +2,6 @@ package com.ontologycentral.ldspider.hooks.error;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -43,15 +42,15 @@ public class ErrorHandlerLogger implements ErrorHandler {
 	protected final Map<Integer, Integer> _time;
 	protected final Map<Integer, Integer> _rotime;
 	
-	Appendable _logger = null;
+	Appendable _logger;
 	
-	Callback _redirects = null;
+	Callback _redirects;
 	
 	boolean _summary;
 	
 	long _lookups;
 	
-	final String lineSeparator = System.getProperty("line.separator");
+	final String lineSeparator = System.lineSeparator();
 
 	SimpleDateFormat _df;
 
@@ -69,19 +68,19 @@ public class ErrorHandlerLogger implements ErrorHandler {
 
 		_redirects = redirects;
 		
-		_errors = Collections.synchronizedList(new ArrayList<ObjectThrowable>());
+		_errors = Collections.synchronizedList(new ArrayList<>());
 		
-		_status = Collections.synchronizedMap(new TreeMap<Integer, Integer>());
-		_rostatus = Collections.synchronizedMap(new TreeMap<Integer, Integer>());
+		_status = Collections.synchronizedMap(new TreeMap<>());
+		_rostatus = Collections.synchronizedMap(new TreeMap<>());
 
-		_cache = Collections.synchronizedMap(new TreeMap<String, Integer>());
-		_rocache = Collections.synchronizedMap(new TreeMap<String, Integer>());
+		_cache = Collections.synchronizedMap(new TreeMap<>());
+		_rocache = Collections.synchronizedMap(new TreeMap<>());
 		
-		_type = Collections.synchronizedMap(new TreeMap<String, Integer>());
-		_rotype = Collections.synchronizedMap(new TreeMap<String, Integer>());
+		_type = Collections.synchronizedMap(new TreeMap<>());
+		_rotype = Collections.synchronizedMap(new TreeMap<>());
 		
-		_time = Collections.synchronizedMap(new TreeMap<Integer, Integer>());
-		_rotime = Collections.synchronizedMap(new TreeMap<Integer, Integer>());
+		_time = Collections.synchronizedMap(new TreeMap<>());
+		_rotime = Collections.synchronizedMap(new TreeMap<>());
 		
 		_lookups = 0;
 
@@ -181,7 +180,7 @@ public class ErrorHandlerLogger implements ErrorHandler {
 	<T> void increment(Map<T, Integer> m, T key) {
 		if (_summary) {
 			if (key != null) {
-				Integer count = (Integer)m.get(key);
+				Integer count = m.get(key);
 				if (count == null) {
 					m.put(key, 1);
 				} else {
@@ -200,7 +199,7 @@ public class ErrorHandlerLogger implements ErrorHandler {
 	}
 	
 	public String summaryToString() {
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 
 		sb.append("robots.txt lookups\n");
 		sb.append(toStringBuffer(_rostatus));
@@ -213,7 +212,7 @@ public class ErrorHandlerLogger implements ErrorHandler {
 
 		for (Map.Entry<Integer, Integer> en : _rotime.entrySet()) {
 			int start = en.getKey() * RESOLUTION;
-			sb.append(start + "-" + (start+(RESOLUTION-1)) + ": " + en.getValue() + "\n");
+			sb.append(start).append("-").append(start + (RESOLUTION - 1)).append(": ").append(en.getValue()).append("\n");
 		}
 
 		sb.append("\nlookups\n");
@@ -227,7 +226,7 @@ public class ErrorHandlerLogger implements ErrorHandler {
 
 		for (Map.Entry<Integer, Integer> en : _time.entrySet()) {
 			int start = en.getKey() * RESOLUTION;
-			sb.append(start + "-" + (start+(RESOLUTION-1)) + ": " + en.getValue() + "\n");
+			sb.append(start).append("-").append(start + (RESOLUTION - 1)).append(": ").append(en.getValue()).append("\n");
 		}
 		
 		sb.append("\n");
@@ -235,13 +234,13 @@ public class ErrorHandlerLogger implements ErrorHandler {
 		return sb.toString();
 	}
 	
-	public StringBuffer toStringBuffer(Map<? extends Object, Integer> map) {
+	public StringBuffer toStringBuffer(Map<?, Integer> map) {
 		StringBuffer sb = new StringBuffer();
 		
 		int sum = 0;
-		for (Map.Entry<? extends Object, Integer> en : map.entrySet()) {
-			sb.append(en.getKey() + ": " + en.getValue() + "\n");
-			sum += (Integer)en.getValue();
+		for (Map.Entry<?, Integer> en : map.entrySet()) {
+			sb.append(en.getKey()).append(": ").append(en.getValue()).append("\n");
+			sum += en.getValue();
 		}
 
 		sb.append("total: ");

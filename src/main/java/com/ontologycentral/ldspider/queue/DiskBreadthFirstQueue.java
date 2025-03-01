@@ -18,16 +18,9 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.nio.file.Files;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
@@ -80,7 +73,7 @@ public class DiskBreadthFirstQueue extends RedirectsFavouringSpiderQueue {
 	private static final String COUNT1FULLSTOP = "\"1\" .";
 	private static final short _two = 2;
 
-	public static enum CountLifeTime {
+	public enum CountLifeTime {
 		ONE_HOP, ETERNALLY
 	}
 
@@ -129,8 +122,8 @@ public class DiskBreadthFirstQueue extends RedirectsFavouringSpiderQueue {
 		_noURIsLeft = false;
 		_it4poll = null;
 		_nxps = null;
-		_brs = new HashSet<BufferedReader>();
-		_files = new HashMap<String, File>();
+		_brs = new HashSet<>();
+		_files = new HashMap<>();
 		_minimumActivePlds = minimumActivePLDs;
 		_minActPldsAlready4Seedlist = minActPldsAlready4Seedlist;
 
@@ -156,7 +149,7 @@ public class DiskBreadthFirstQueue extends RedirectsFavouringSpiderQueue {
 					OutputStream os = new BufferedOutputStream(
 							new FileOutputStream(_eternalFileCounts));
 					
-					int data = -1;
+					int data;
 					while ((data = is.read()) > -1)
 						os.write(data);
 
@@ -269,9 +262,9 @@ public class DiskBreadthFirstQueue extends RedirectsFavouringSpiderQueue {
 		if (CrawlerConstants.DUMP_FRONTIER)
 			try {
 				frontierbw = new BufferedWriter(new OutputStreamWriter(
-						new GZIPOutputStream(new FileOutputStream(new File(
-								CrawlerConstants.DUMP_FRONTIER_FILENAME + "-"
-										+ (_scheduledFrontiers - 1) + ".nx.gz")))));
+						new GZIPOutputStream(Files.newOutputStream(new File(
+                                CrawlerConstants.DUMP_FRONTIER_FILENAME + "-"
+                                        + (_scheduledFrontiers - 1) + ".nx.gz").toPath()))));
 				_frontierDumper = new CallbackNxAppender(frontierbw);
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -292,9 +285,9 @@ public class DiskBreadthFirstQueue extends RedirectsFavouringSpiderQueue {
 				e2.printStackTrace();
 			}
 
-		Map<String, File> sortedFiles = new HashMap<String, File>(_files.size());
+		Map<String, File> sortedFiles = new HashMap<>(_files.size());
 		if (_nxps == null)
-			_nxps = new HashMap<String, NxParser>(_files.size());
+			_nxps = new HashMap<>(_files.size());
 		else
 			_nxps.clear();
 
@@ -310,7 +303,7 @@ public class DiskBreadthFirstQueue extends RedirectsFavouringSpiderQueue {
 
 		System.gc();
 
-		BufferedReader br = null;
+		BufferedReader br;
 		for (Entry<String, File> e : _files.entrySet()) {
 			try {
 				e.getValue().deleteOnExit();
@@ -334,10 +327,10 @@ public class DiskBreadthFirstQueue extends RedirectsFavouringSpiderQueue {
 
 	private void processFrontiersIterator(Iterator<URI> it) {
 
-		Map<String, Callback> callbacks = new HashMap<String, Callback>();
+		Map<String, Callback> callbacks = new HashMap<>();
 
 		URI currentURI = null;
-		URI prevURI = null;
+		URI prevURI;
 
 		int currentCount = 1;
 
@@ -365,13 +358,8 @@ public class DiskBreadthFirstQueue extends RedirectsFavouringSpiderQueue {
 		}
 
 		// close all callbacks
-		for (Callback c : callbacks.values()) {
-			c.endDocument();
-		}
 
-		callbacks.clear();
-
-	}
+    }
 
 	public int size() {
 		return super.size() + _noOfUris;
@@ -394,26 +382,23 @@ public class DiskBreadthFirstQueue extends RedirectsFavouringSpiderQueue {
 		Callback _newEternalCountsCB = null;
 
 		public Writer() {
-			_callbacks = new HashMap<String, Callback>();
+			_callbacks = new HashMap<>();
 			_countLifeTime = _lifeTimeOfCounts;
 			_currentCount = 1;
 			_stateFinished = false;
 
 			if (_countLifeTime == CountLifeTime.ETERNALLY) {
-				BufferedReader br = null;
+				BufferedReader br;
 				try {
 					br = new BufferedReader(new InputStreamReader(
-							new GZIPInputStream(new FileInputStream(
-									_eternalFileCounts))));
-					_eternal = new PeekingIterator<Node[]>(
-							new PleaseCloseTheDoorWhenYouLeaveIterator<Node[]>(
-									new NxParser(br), br));
-				} catch (FileNotFoundException e) {
-					e.printStackTrace();
+							new GZIPInputStream(Files.newInputStream(_eternalFileCounts.toPath()))));
+					_eternal = new PeekingIterator<>(
+                            new PleaseCloseTheDoorWhenYouLeaveIterator<>(
+                                    new NxParser(br), br));
 				} catch (EOFException e) {
 					// gzip does not like empty files
-					_eternal = new PeekingIterator<Node[]>(
-							Collections.<Node[]> emptySet());
+					_eternal = new PeekingIterator<>(
+                            Collections.emptySet());
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
@@ -429,8 +414,7 @@ public class DiskBreadthFirstQueue extends RedirectsFavouringSpiderQueue {
 					_newEternalCountsFile.deleteOnExit();
 					_newEternalCountsCB = new CallbackNxBufferedWriter(
 							new BufferedWriter(new OutputStreamWriter(
-									new GZIPOutputStream(new FileOutputStream(
-											_newEternalCountsFile)))), true);
+									new GZIPOutputStream(Files.newOutputStream(_newEternalCountsFile.toPath())))), true);
 				} catch (IOException e) {
 					_log.warning("Could not create new temp file for eternal counts.");
 				}
@@ -454,7 +438,7 @@ public class DiskBreadthFirstQueue extends RedirectsFavouringSpiderQueue {
 
 			String currentPLD = _tm.getPLD(u);
 
-			Callback cb = null;
+			Callback cb;
 
 			if ((cb = _callbacks.get(currentPLD)) == null) {
 				try {
@@ -476,21 +460,18 @@ public class DiskBreadthFirstQueue extends RedirectsFavouringSpiderQueue {
 				}
 			}
 
-			switch (_countLifeTime) {
-			case ETERNALLY:
-				i = determineEternalCountAndWriteToEternal(u, i);
-			default:
-				cb.processStatement(new Node[] {
-						new Resource(NxUtil.escapeForNx(u.toString())),
-						new Literal(Integer.toString(i)) });
-				break;
-			}
+            if (Objects.requireNonNull(_countLifeTime) == CountLifeTime.ETERNALLY) {
+                i = determineEternalCountAndWriteToEternal(u, i);
+            }
+            Objects.requireNonNull(cb).processStatement(new Node[]{
+                    new Resource(NxUtil.escapeForNx(u.toString())),
+                    new Literal(Integer.toString(i))});
 
-		}
+        }
 
 		private int determineEternalCountAndWriteToEternal(URI u,
 				int itsCountInThisRound) {
-			Node[] prev = null;
+			Node[] prev;
 			Node[] current = null;
 
 			// empty eternal or in the previous rounds we got the last one of
@@ -539,19 +520,16 @@ public class DiskBreadthFirstQueue extends RedirectsFavouringSpiderQueue {
 						_eternal.next();
 						return count;
 					}
-				} catch (NumberFormatException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (URISyntaxException e) {
+				} catch (NumberFormatException | URISyntaxException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 
-				// if there is no entry for u in eternal (we just skipped over
+                // if there is no entry for u in eternal (we just skipped over
 				// its empty place):
 				try {
 					if (current != null
-							&& ((Resource) current[0]).toURI().compareTo(u) > 0) {
+							&& ((Resource) current[0]).toURI().compareTo(Objects.requireNonNull(u)) > 0) {
 						_newEternalCountsCB
 								.processStatement(new Node[] {
 										new Resource(NxUtil.escapeForNx(u.toString())),
@@ -580,7 +558,7 @@ public class DiskBreadthFirstQueue extends RedirectsFavouringSpiderQueue {
 
 			// the last one if there was one at all:
 			if (_currentURI != null) {
-				if (_prevURI != null && _currentURI.equals(_prevURI))
+				if (_currentURI.equals(_prevURI))
 					++_currentCount;
 				writeOut(_currentURI, _currentCount);
 			}
@@ -604,11 +582,11 @@ public class DiskBreadthFirstQueue extends RedirectsFavouringSpiderQueue {
 
 					try {
 						OutputStream os = new BufferedOutputStream(
-								new FileOutputStream(f));
+                                Files.newOutputStream(f.toPath()));
 						InputStream is = new BufferedInputStream(
-								new FileInputStream(_eternalFileCounts));
+                                Files.newInputStream(_eternalFileCounts.toPath()));
 
-						int data = -1;
+						int data;
 
 						while ((data = is.read()) > -1) {
 							os.write(data);
@@ -616,8 +594,6 @@ public class DiskBreadthFirstQueue extends RedirectsFavouringSpiderQueue {
 
 						is.close();
 						os.close();
-					} catch (FileNotFoundException e) {
-						e.printStackTrace();
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
@@ -679,10 +655,7 @@ public class DiskBreadthFirstQueue extends RedirectsFavouringSpiderQueue {
 			// check done, there seems to be something to be sorted, so go on.
 
 			// reset the data structures from the quick check:
-			line1 = null;
-			line2 = null;
-			line3 = null;
-			try {
+            try {
 				br.reset();
 			} catch (IOException e) {
 				br = new BufferedReader(new FileReader(in));
@@ -699,14 +672,14 @@ public class DiskBreadthFirstQueue extends RedirectsFavouringSpiderQueue {
 
 			boolean shorterThan10k = false;
 
-			Set<Node[]> set = new HashSet<Node[]>();
-			Set<Nodes> nodesset = new HashSet<Nodes>();
+			Set<Node[]> set = new HashSet<>();
+			Set<Nodes> nodesset = new HashSet<>();
 			NxParser nxp = new NxParser(br);
 
 			int count = 0;
 			int dup = 0;
 
-			Node[] nx = null;
+			Node[] nx;
 			for (int i = 0; i < 10000; ++i) {
 				if (nxp.hasNext()) {
 					nx = nxp.next();
@@ -724,7 +697,7 @@ public class DiskBreadthFirstQueue extends RedirectsFavouringSpiderQueue {
 
 			if (shorterThan10k) {
 				List<Node[]> list = Arrays.asList(set.toArray(new Node[0][0]));
-				Collections.sort(list, _nc);
+				list.sort(_nc);
 				Callback cb = new CallbackNxAppender(bw);
 				for (Node[] nodes : list)
 					cb.processStatement(nodes);

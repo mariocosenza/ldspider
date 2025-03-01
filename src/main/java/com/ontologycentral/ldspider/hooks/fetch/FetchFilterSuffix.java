@@ -5,7 +5,7 @@ import java.net.URI;
 import org.apache.http.HttpEntity;
 
 public class FetchFilterSuffix implements FetchFilter {
-	String[] _suffixes = { };
+	String[] _suffixes;
 
 	public FetchFilterSuffix(String[] suffixes) {
 		_suffixes = suffixes;

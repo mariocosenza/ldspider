@@ -31,9 +31,9 @@ import com.ontologycentral.ldspider.http.internal.ResponseGzipUncompress;
 
 public class ConnectionManager {
 
-    private DefaultHttpClient _client;
+    private final DefaultHttpClient _client;
 
-	private CloseIdleConnectionThread _ciThread;
+	private final CloseIdleConnectionThread _ciThread;
 
     
     public ConnectionManager(String proxyHost, int proxyPort, String puser, String ppassword, int connections) {
@@ -73,7 +73,7 @@ public class ConnectionManager {
     		if (puser != null) {
     			_client.getCredentialsProvider().setCredentials(
     					new AuthScope(proxyHost, proxyPort),
-    					new UsernamePasswordCredentials(puser, new String(ppassword))); 
+    					new UsernamePasswordCredentials(puser, ppassword));
     		}
     	}
  	
@@ -99,7 +99,7 @@ public class ConnectionManager {
 
     }
 
-    public HttpResponse connect(HttpGet get) throws ClientProtocolException, IOException {
+    public HttpResponse connect(HttpGet get) throws IOException {
     	return _client.execute(get);
     }
 }

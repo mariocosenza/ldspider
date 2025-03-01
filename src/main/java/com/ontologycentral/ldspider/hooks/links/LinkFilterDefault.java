@@ -63,7 +63,7 @@ public class LinkFilterDefault implements LinkFilter {
 				addUri(nx, i);
 				//Subject
 				if(i == 0 && _followABox) {
-					if(_followABox) addABox(nx, i);
+                    addABox(nx, i);
 				}
 				//Predicate
 				else if(i == 1) {
@@ -111,9 +111,10 @@ public class LinkFilterDefault implements LinkFilter {
 				// @@@ HACK to throw out non-RDF sites early
 				boolean add = true;
 				for (String s : CrawlerConstants.SITES_NO_RDF) {
-					if (u.getHost() != null && u.getHost().contains(s)) {
-						add = false;
-					}
+                    if (u.getHost() != null && u.getHost().contains(s)) {
+                        add = false;
+                        break;
+                    }
 				}
 				if (add) {
 					_f.add(u);

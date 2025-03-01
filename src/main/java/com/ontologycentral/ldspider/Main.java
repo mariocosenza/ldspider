@@ -14,19 +14,17 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
@@ -34,14 +32,7 @@ import java.util.zip.GZIPOutputStream;
 import org.apache.any23.http.AcceptHeaderBuilder;
 import org.apache.any23.mime.MIMEType;
 import org.apache.any23.writer.TripleHandler;
-import org.apache.commons.cli.BasicParser;
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.OptionBuilder;
-import org.apache.commons.cli.OptionGroup;
-import org.apache.commons.cli.Options;
+import org.apache.commons.cli.*;
 import org.apache.http.message.BasicHeader;
 import org.semanticweb.yars.nx.Node;
 import org.semanticweb.yars.nx.Resource;
@@ -359,7 +350,7 @@ public class Main {
 
 		CommandLineParser parser = new BasicParser();
 		HelpFormatter formatter = new HelpFormatter();
-		CommandLine cmd = null;
+		CommandLine cmd;
 		try {
 			cmd = parser.parse(options, args,true);
 			if (cmd.hasOption("h") || cmd.hasOption("help")) {
@@ -371,21 +362,15 @@ public class Main {
 			}
 
 			run(cmd);
-		} catch (org.apache.commons.cli.ParseException e) {
-			formatter.printHelp(80," ","ERROR: "+e.getMessage()+"\n", options,"\nError occured! Please see the error message above",true );
-			System.exit(-1);
-		} catch (IOException e) {
-			formatter.printHelp(80," ","ERROR: "+e.getMessage()+"\n", options,"\nError occured! Please see the error message above",true );
-			System.exit(-1);
-		} catch (NumberFormatException e) {
+		} catch (ParseException | IOException | NumberFormatException e) {
 			formatter.printHelp(80," ","ERROR: "+e.getMessage()+"\n", options,"\nError occured! Please see the error message above",true );
 			System.exit(-1);
 		}
-	}
+    }
 
-	private static void run(CommandLine cmd) throws FileNotFoundException, IOException {
+	private static void run(CommandLine cmd) throws IOException {
 		// check seed file
-		Iterable<URI> seeds = null;
+		Iterable<URI> seeds;
 //		if (cmd.hasOption("s")) {
 			File seedList = new File(cmd.getOptionValue("s"));
 			_log.info("reading seeds from " + seedList.getAbsolutePath());
@@ -436,7 +421,7 @@ public class Main {
 				else {
 					if (path.endsWith(".gz"))
 						os = new BufferedOutputStream(new GZIPOutputStream(
-								new FileOutputStream(path)));
+                                Files.newOutputStream(Paths.get(path))));
 					else
 						os = new BufferedOutputStream(
 								new FileOutputStream(path));
@@ -455,7 +440,7 @@ public class Main {
 					cbHeader = new CallbackNxAppender(
 							new HopwiseSplittingFileOutputter(path));
 				else {
-					headerOS = new FileOutputStream(path);
+					headerOS = Files.newOutputStream(Paths.get(path));
 					cbHeader = new CallbackNxOutputStream(
 							new BufferedOutputStream(headerOS), false);
 				}
@@ -487,11 +472,10 @@ public class Main {
 				ps = new HopwiseSplittingFileOutputter(cmd.getOptionValue("a"));
 			} else {
 				OutputStream accOs = cmd.getOptionValue("a").endsWith(".gz") ? new GZIPOutputStream(
-						new FileOutputStream(cmd.getOptionValue("a")))
-						: new FileOutputStream(cmd.getOptionValue("a"));
+                        Files.newOutputStream(Paths.get(cmd.getOptionValue("a"))))
+						: Files.newOutputStream(Paths.get(cmd.getOptionValue("a")));
 				ps = new PrintStream(new BufferedOutputStream(accOs));
-				if (ps instanceof Closeable)
-					CrawlerConstants.CLOSER.add((Closeable) ps);
+                CrawlerConstants.CLOSER.add((Closeable) ps);
 			}
 		}
 
@@ -504,11 +488,10 @@ public class Main {
 			} else {
 				if (path.endsWith(".gz"))
 					rounds = new PrintStream(new BufferedOutputStream(
-							new GZIPOutputStream(new FileOutputStream(path))));
+							new GZIPOutputStream(Files.newOutputStream(Paths.get(path)))));
 				else
 					rounds = new PrintStream(new FileOutputStream(path));
-				if (rounds instanceof Closeable)
-					CrawlerConstants.CLOSER.add((Closeable) rounds);
+                CrawlerConstants.CLOSER.add((Closeable) rounds);
 			}
 		}
 
@@ -520,8 +503,8 @@ public class Main {
 						cmd.getOptionValue("r"), true));
 			} else {
 				OutputStream ros = cmd.getOptionValue("r").endsWith(".gz") ? new GZIPOutputStream(
-						new FileOutputStream(cmd.getOptionValue("r")))
-						: new FileOutputStream(cmd.getOptionValue("r"));
+                        Files.newOutputStream(Paths.get(cmd.getOptionValue("r"))))
+						: Files.newOutputStream(Paths.get(cmd.getOptionValue("r")));
 				OutputStream fos = new BufferedOutputStream(ros);
 				CrawlerConstants.CLOSER.add(fos);
 				rcb = new CallbackNxOutputStream(fos, false);
@@ -529,7 +512,7 @@ public class Main {
 			rcb.startDocument();
 		}
 
-		ErrorHandler eh = null;
+		ErrorHandler eh;
 
 		if (rounds != null) {
 			eh = new ErrorHandlerRounds(ps, rounds, rcb);			
@@ -572,7 +555,7 @@ public class Main {
 
 		_log.info("frontier done");
 
-		LinkFilter links = null;
+		LinkFilter links;
 
 		if (cmd.hasOption("y")) {
 			LinkFilterDomain lfd = new LinkFilterDomain(frontier);
@@ -584,10 +567,9 @@ public class Main {
 
 			links = lfd;
 		} else if (cmd.hasOption("n")) {
-			LinkFilterDummy d = new LinkFilterDummy();
-			links = d;
+            links = new LinkFilterDummy();
 		} else if(cmd.hasOption("f")) {
-			List<Node> predicates = new ArrayList<Node>();
+			List<Node> predicates = new ArrayList<>();
 			for(String uri : cmd.getOptionValues("f")) {
 				predicates.add(new Resource(uri));
 			}
@@ -680,32 +662,29 @@ public class Main {
 		c.setContentHandler(ch);
 
 		// changing the accept header
-		/** null means keep default. */
-		Collection<MIMEType> mimetypes = null;
+		Collection<MIMEType> mimetypes;
 		if(cmd.hasOption("accept")) {
 			String[] mTypes = cmd.getOptionValues("accept");
 			if (mTypes == null)
 				mimetypes = Collections.emptyList();
 			else {
-				mimetypes = new LinkedList<MIMEType>();
+				mimetypes = new LinkedList<>();
 				for (String s : mTypes)
-					if (!s.equals("") && !s.equals(" "))
+					if (!s.isEmpty() && !s.equals(" "))
 						try {
 							mimetypes.add(MIMEType.parse(s));
 						} catch (IllegalArgumentException e) {
 							_log.warning(e.getMessage());
-							continue;
-						}
+                        }
 			}
 		} else {
-			mimetypes = new LinkedList<MIMEType>();
+			mimetypes = new LinkedList<>();
 			for (String s : ch.getMimeTypes())
 				try {
 					mimetypes.add(MIMEType.parse(s));
 				} catch (IllegalArgumentException e) {
 					_log.warning(e.getMessage());
-					continue;
-				}
+                }
 			if (mimetypes.isEmpty())
 				mimetypes = null;
 		}
@@ -726,7 +705,7 @@ public class Main {
 //		}
 		
 		
-		Seen seen = null;
+		Seen seen;
 		if (cmd.hasOption("ds")) {
 			seen = new WrappingCallbackSeen(new HashSetSeen(),
 					new CallbackNxAppender(new HopwiseSplittingFileOutputter(
@@ -864,11 +843,11 @@ public class Main {
 	}
 
 	static void readFromThisFileIntoThisSeen(String seenfilename, Seen seen)
-			throws FileNotFoundException, IOException {
+			throws IOException {
 		File inSeenFile = new File(seenfilename);
 
 		InputStream is = inSeenFile.getAbsolutePath().endsWith(".gz") ? new GZIPInputStream(
-				new FileInputStream(inSeenFile)) : new FileInputStream(
+                Files.newInputStream(inSeenFile.toPath())) : new FileInputStream(
 				inSeenFile);
 
 		BufferedReader br = new BufferedReader(new InputStreamReader(is));
@@ -900,7 +879,7 @@ public class Main {
 		File inRedirectsFile = new File(redirectsfilename);
 
 		InputStream is = inRedirectsFile.getAbsolutePath().endsWith(".gz") ? new GZIPInputStream(
-				new FileInputStream(inRedirectsFile)) : new FileInputStream(
+                Files.newInputStream(inRedirectsFile.toPath())) : new FileInputStream(
 				inRedirectsFile);
 
 		int i = 0;
@@ -916,18 +895,14 @@ public class Main {
 				from = (Resource) nx[0];
 				to = (Resource) nx[1];
 
-				if (from != null && to != null) {
-					try {
-						redirects.put(from.toURI(), to.toURI());
-					} catch (URISyntaxException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-					++i;
-				} else
-					_log.info("Dropping from redirects because of URI problems: "
-							+ from + " to " + to);
-			} else
+                try {
+                    redirects.put(from.toURI(), to.toURI());
+                } catch (URISyntaxException e) {
+// TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+                ++i;
+            } else
 				_log.info("Not all resources: redirect " + nx[0] + " to "
 						+ nx[1]);
 
@@ -940,42 +915,37 @@ public class Main {
 	}
 
 	/**
-	 * 
-	 * @param q - queue
+	 *
 	 * @param seedList
 	 * @throws IOException 
 	 */
 	static Iterable<URI> prepareSeedsIterable(File seedList) throws IOException {
-		List<URI> seeds = new LinkedList<URI>();
+		List<URI> seeds = new LinkedList<>();
 		
 		final Iterator<URI> it;
 
 		if (seedList.getPath().endsWith(".nx.gz")) {
 			InputStream is = new GZIPInputStream(new FileInputStream(seedList));
-			it = new PleaseCloseTheDoorWhenYouLeaveIterator<URI>(
-					new Node2uriConvertingIterator(new NxParser(is), 0), is);
+			it = new PleaseCloseTheDoorWhenYouLeaveIterator<>(
+                    new Node2uriConvertingIterator(new NxParser(is), 0), is);
 		} else if (seedList.getPath().endsWith(".gz")) {
 			BufferedReader br = new BufferedReader(new InputStreamReader(
-					new GZIPInputStream(new FileInputStream(seedList))));
-			it = new PleaseCloseTheDoorWhenYouLeaveIterator<URI>(
-					new Util.StringToURIiterable(
-							new Util.LineByLineIterable(br)).iterator(), br);
+					new GZIPInputStream(Files.newInputStream(seedList.toPath()))));
+			it = new PleaseCloseTheDoorWhenYouLeaveIterator<>(
+                    new Util.StringToURIiterable(
+                            new Util.LineByLineIterable(br)).iterator(), br);
 		} else if (seedList.getPath().endsWith(".nx")) {
 			FileReader fr = new FileReader(seedList);
-			it = new PleaseCloseTheDoorWhenYouLeaveIterator<URI>(
-					new Node2uriConvertingIterator(new NxParser(fr), 0), fr);
+			it = new PleaseCloseTheDoorWhenYouLeaveIterator<>(
+                    new Node2uriConvertingIterator(new NxParser(fr), 0), fr);
 		} else {
 			FileReader fr = new FileReader(seedList);
-			it = new PleaseCloseTheDoorWhenYouLeaveIterator<URI>(
-					new Util.StringToURIiterable(new Util.LineByLineIterable(
-							new BufferedReader(fr))).iterator(), fr);
+			it = new PleaseCloseTheDoorWhenYouLeaveIterator<>(
+                    new Util.StringToURIiterable(new Util.LineByLineIterable(
+                            new BufferedReader(fr))).iterator(), fr);
 		}
 		
-		return new Iterable<URI>() {
-			public Iterator<URI> iterator() {
-				return it;
-			}
-		};
+		return () -> it;
 
 //		int i = 0;
 //

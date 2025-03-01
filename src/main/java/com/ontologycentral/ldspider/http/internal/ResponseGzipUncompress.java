@@ -68,10 +68,10 @@ public class ResponseGzipUncompress implements HttpResponseInterceptor {
         Header ceheader = entity.getContentEncoding();
         if (ceheader != null) {
             HeaderElement[] codecs = ceheader.getElements();
-            for (int i = 0; i < codecs.length; i++) {
-                if (codecs[i].getName().equalsIgnoreCase(GZIP_CODEC)) {
-                	_log.info("gzip compression");
-                    response.setEntity(new GzipDecompressingEntity(response.getEntity())); 
+            for (HeaderElement codec : codecs) {
+                if (codec.getName().equalsIgnoreCase(GZIP_CODEC)) {
+                    _log.info("gzip compression");
+                    response.setEntity(new GzipDecompressingEntity(response.getEntity()));
                     return;
                 }
             }

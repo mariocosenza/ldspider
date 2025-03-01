@@ -32,7 +32,7 @@ public class CloseIdleConnectionThread extends Thread{
 			try {
 				Thread.sleep(_st);
 			} catch (InterruptedException e) {
-				if (_run == true) {
+				if (_run) {
 					e.printStackTrace();
 				}
 			}

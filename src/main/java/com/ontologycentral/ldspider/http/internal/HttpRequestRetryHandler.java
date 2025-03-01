@@ -34,12 +34,8 @@ public class HttpRequestRetryHandler implements
         }
         HttpRequest request = (HttpRequest) context.getAttribute(
                 ExecutionContext.HTTP_REQUEST);
-        boolean idempotent = !(request instanceof HttpEntityEnclosingRequest); 
-        if (idempotent) {
-            // Retry if the request is considered idempotent 
-            return true;
-        }
-        return false;
+        // Retry if the request is considered idempotent
+        return !(request instanceof HttpEntityEnclosingRequest);
     }
 
 }

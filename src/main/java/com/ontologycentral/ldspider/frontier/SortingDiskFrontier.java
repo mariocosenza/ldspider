@@ -12,6 +12,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.URI;
+import java.nio.file.Files;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -51,7 +52,7 @@ public class SortingDiskFrontier extends Frontier implements Closeable {
 	static final String FILENAME_CURRENT = FILENAME_BASE + "-Current";
 	static final String FILENAME_SORTED = FILENAME_BASE + "-Sorted";
 
-	File _currentTempFile = null;
+	File _currentTempFile;
 	File _sortedTempFile = null;
 	boolean _isSorted;
 
@@ -73,8 +74,7 @@ public class SortingDiskFrontier extends Frontier implements Closeable {
 		_currentTempFile = File.createTempFile(FILENAME_CURRENT, SUFFIX);
 		_currentTempFile.deleteOnExit();
 		OutputStream os = _gzipFrontier ? new GZIPOutputStream(
-				new FileOutputStream(_currentTempFile)) : new FileOutputStream(
-				_currentTempFile);
+                Files.newOutputStream(_currentTempFile.toPath())) : Files.newOutputStream(_currentTempFile.toPath());
 		BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(os));
 		_clo = bw;
 		_cb = new CallbackNxAppender(bw);
@@ -117,8 +117,8 @@ public class SortingDiskFrontier extends Frontier implements Closeable {
 		_currentTempFile.deleteOnExit();
 		try {
 			OutputStream os = _gzipFrontier ? new GZIPOutputStream(
-					new FileOutputStream(_currentTempFile))
-					: new FileOutputStream(_currentTempFile);
+                    Files.newOutputStream(_currentTempFile.toPath()))
+					: Files.newOutputStream(_currentTempFile.toPath());
 			BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(os));
 			_clo = bw;
 			_cb = new CallbackNxAppender(bw);
@@ -146,7 +146,7 @@ public class SortingDiskFrontier extends Frontier implements Closeable {
 					: _currentTempFile;
 
 			InputStream is = _gzipFrontier ? new GZIPInputStream(
-					new FileInputStream(file)) : new FileInputStream(file);
+                    Files.newInputStream(file.toPath())) : new FileInputStream(file);
 
 			br = new BufferedReader(new InputStreamReader(is));
 
@@ -154,15 +154,15 @@ public class SortingDiskFrontier extends Frontier implements Closeable {
 		} catch (IOException e) {
 			_log.warning("IOException. " + e.getLocalizedMessage()
 					+ ". returning empty iterator!");
-			return Collections.<URI> emptyList().iterator();
+			return Collections.emptyIterator();
 		} catch (ParseException e) {
 			_log.warning("ParseException. " + e.getLocalizedMessage()
 					+ ". returning empty iterator!");
-			return Collections.<URI> emptyList().iterator();
+			return Collections.emptyIterator();
 		}
 
-		return new PleaseCloseTheDoorWhenYouLeaveIterator<URI>(
-				new Node2uriConvertingIterator(nx, 0), br);
+		return new PleaseCloseTheDoorWhenYouLeaveIterator<>(
+                new Node2uriConvertingIterator(nx, 0), br);
 
 	}
 
@@ -181,9 +181,9 @@ public class SortingDiskFrontier extends Frontier implements Closeable {
 			is = new GZIPInputStream(
 					new FileInputStream(in));
 			os = new GZIPOutputStream(
-					new FileOutputStream(out));
+                    Files.newOutputStream(out.toPath()));
 		} else {
-			is = new FileInputStream(in);
+			is = Files.newInputStream(in.toPath());
 			os = new FileOutputStream(out);
 		}
 		
@@ -211,12 +211,11 @@ public class SortingDiskFrontier extends Frontier implements Closeable {
 		sa.setGzipBatches(_gzipFrontier);
 
 		SortIterator si = new SortIterator(sa);
-		Iterator<Node[]> iter = si;
 
-		cb.startDocument();
+        cb.startDocument();
 		
-		while (iter.hasNext()) {
-			cb.processStatement(iter.next());
+		while (si.hasNext()) {
+			cb.processStatement(si.next());
 		}
 		
 		cb.endDocument();

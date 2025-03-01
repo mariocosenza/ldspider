@@ -4,7 +4,7 @@ import org.semanticweb.yars.nx.Node;
 import org.semanticweb.yars.nx.parser.Callback;
 
 /**
- * A dummy sink which discards all statements.
+ * A placeholder sink which discards all statements.
  * 
  * @author RobertIsele
  */

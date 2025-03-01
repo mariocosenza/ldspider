@@ -22,7 +22,7 @@ public class CallbackNQuadTripleHandler implements TripleHandler {
 
 	Logger _log = Logger.getLogger(CallbackNQuadTripleHandler.class.getName());
 
-	private Callback _cb;
+	private final Callback _cb;
 
 	public CallbackNQuadTripleHandler(Callback callback) {
 		_cb = callback;
@@ -34,8 +34,8 @@ public class CallbackNQuadTripleHandler implements TripleHandler {
 	 */
 	public void receiveTriple(Resource arg0, URI arg1, Value arg2, URI arg3,
 			ExtractionContext arg4) throws TripleHandlerException {
-		Node subj = null, pred = null, obj = null;
-		org.semanticweb.yars.nx.Resource cont = null;
+		Node subj = null, pred, obj = null;
+		org.semanticweb.yars.nx.Resource cont;
 
 		cont = convert(arg4.getDocumentURI());
 
@@ -100,7 +100,7 @@ public class CallbackNQuadTripleHandler implements TripleHandler {
 
 	private org.semanticweb.yars.nx.Literal convert(Literal arg0) throws TripleHandlerException{
 		String value = NxUtil.escapeForNx(arg0.getLabel());
-		String language = null;
+		String language;
 		org.semanticweb.yars.nx.Resource datatype = null;
 
 		if (arg0.getDatatype() != null)
